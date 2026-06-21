@@ -15,26 +15,26 @@ def is_enabled(value, default):
 # 🤖 BOT INFO & CREDENTIALS
 # =========================================================
 SESSION = environ.get('SESSION', 'Webavbot')
-API_ID = int(environ.get('API_ID', '12000656'))
-API_HASH = environ.get('API_HASH', 'd927c13beaaf5110f2c071273')
-BOT_TOKEN = environ.get('BOT_TOKEN', '70917168:AAF8TzmnNYW721xIUUuseLU41xa5bRA')
+API_ID = int(environ.get('API_ID', '29904834'))
+API_HASH = environ.get('API_HASH', '8b4fd9ef578af114502feeafa2d31938')
+BOT_TOKEN = environ.get('BOT_TOKEN', '8714836567:AAEUM36b-_Nri1HFjmAa0Yv1r_A_TPxI0eU')
 
 # Admin Settings
-ADMINS = [int(x) for x in environ.get('ADMINS', '5977931010').split()]
-OWNER_USERNAME = environ.get("OWNER_USERNAME", 'BOT_OWNER26')
+ADMINS = [int(x) for x in environ.get('ADMINS', '7120801813').split()]
+OWNER_USERNAME = environ.get("OWNER_USERNAME", 'ya_movies')
 
 # =========================================================
 # 🗄️ DATABASE CONNECTION
 # =========================================================
-DB_URL = environ.get('DATABASE_URI', "mongodb+srv://teshsjsg1:axxxxtz@testing.kwuyhwka.mongodb.net/?appName=testing")
+DB_URL = environ.get('DATABASE_URI', "mongodb+srv://Testbot:Testbot@cluster0.5iukc4c.mongodb.net/?appName=Cluster0")
 DB_NAME = environ.get('DATABASE_NAME', "testing")
 
 # =========================================================
 # 📢 CHANNELS & LOGS
 # =========================================================
 # Mandatory Channels
-BIN_CHANNEL = int(environ.get("BIN_CHANNEL", '-1002114619001'))
-LOG_CHANNEL = int(environ.get("LOG_CHANNEL", '-1002114619001'))
+BIN_CHANNEL = int(environ.get("BIN_CHANNEL", '-1004498638459'))
+LOG_CHANNEL = int(environ.get("LOG_CHANNEL", '-1004498638459'))
 
 # Feature Specific Logs
 PREMIUM_LOGS = int(environ.get("PREMIUM_LOGS", '-1002114619001'))

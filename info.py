@@ -38,11 +38,11 @@ LOG_CHANNEL = int(environ.get("LOG_CHANNEL", '-1004498638459'))
 
 # Feature Specific Logs
 PREMIUM_LOGS = int(environ.get("PREMIUM_LOGS", '-1004498638459'))
-VERIFIED_LOG = int(environ.get('VERIFIED_LOG', '-1002114619001'))
-SUPPORT_GROUP = int(environ.get("SUPPORT_GROUP", "-1002114619001"))
+VERIFIED_LOG = int(environ.get('VERIFIED_LOG', '-1004498638459'))
+SUPPORT_GROUP = int(environ.get("SUPPORT_GROUP", "-1004498638459"))
 
 # Auth Channels (Safe Parsing)
-auth_channel_str = environ.get("AUTH_CHANNEL", "-1002114619001")
+auth_channel_str = environ.get("AUTH_CHANNEL", "-1004498638459")
 AUTH_CHANNEL = [int(x) for x in auth_channel_str.split()] if auth_channel_str else []
 
 # =========================================================
@@ -56,7 +56,7 @@ TUTORIAL_LINK_2 = environ.get('TUTORIAL_LINK_2', 'https://t.me/2')
 # =========================================================
 # 🔐 VERIFICATION & SHORTENER
 # =========================================================
-IS_VERIFY = is_enabled(environ.get("IS_VERIFY", "True"), True)
+IS_VERIFY = is_enabled(environ.get("IS_VERIFY", "False"), True)
 IS_SECOND_VERIFY = is_enabled(environ.get("IS_SECOND_VERIFY", "True"), True)
 IS_SHORTLINK = is_enabled(environ.get('IS_SHORTLINK', "True"), True)
 
@@ -83,7 +83,7 @@ SLEEP_THRESHOLD = int(getenv('SLEEP_THRESHOLD', '60'))
 RATE_LIMIT_TIMEOUT = int(environ.get("RATE_LIMIT_TIMEOUT", "600"))
 
 # File Limits
-MAX_FILES = int(environ.get("MAX_FILES", "5"))
+MAX_FILES = int(environ.get("MAX_FILES", "50"))
 BATCH_LIMIT = int(environ.get('BATCH_LIMIT', 60))
 
 # =========================================================
@@ -113,7 +113,7 @@ else:
     APP_NAME = None
 
 PORT = int(getenv('PORT', '2626'))
-NO_PORT = is_enabled(getenv("NO_PORT", "False"), False)
+NO_PORT = is_enabled(getenv("NO_PORT", "True"), False)
 HAS_SSL = is_enabled(getenv("HAS_SSL", "False"), False)
 BIND_ADDRESS = getenv("WEB_SERVER_BIND_ADDRESS", "127.0.0.1")
 

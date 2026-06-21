@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 
 <head>
     <meta charset="UTF-8" />
@@ -7,163 +7,151 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="https://img.sanishtech.com/u/62e636411ff87f8ccbdd9eb50eb18279.png" type="image/x-icon">
 
+    <!-- Styles & Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-
     <link rel="stylesheet" href="https://av-botz.vercel.app/2626/style.css">
+
+    <style>
+        :root { --accent: #00d2ff; --glass: rgba(255, 255, 255, 0.05); }
+        body { font-family: 'Outfit', sans-serif; background: #0a0a0b; color: white; margin: 0; padding: 0; }
+        
+        /* 4 Data Boxes */
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 15px; }
+        .info-box { background: var(--glass); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .info-box span { display: block; font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .info-box strong { color: var(--accent); font-size: 13px; display: block; margin-top: 2px; }
+
+        /* Buttons */
+        .action-container { padding: 0 15px; }
+        .main-btn { width: 100%; padding: 16px; border-radius: 15px; border: none; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; color: white; transition: 0.3s; cursor: pointer; font-size: 16px; }
+        .btn-watch { background: linear-gradient(45deg, #00d2ff, #3a7bd5); box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4); }
+        .btn-download { background: linear-gradient(45deg, #2ecc71, #27ae60); }
+        
+        /* Player Grid */
+        .player-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 15px; }
+        .p-btn { background: var(--glass); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); color: white; text-decoration: none; font-size: 12px; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .p-btn i { font-size: 16px; }
+
+        /* Links */
+        .link-container { margin: 25px 15px; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; border: 1px solid #222; }
+        .link-label { font-size: 11px; color: #666; margin-bottom: 5px; display: block; font-weight: 600; }
+        .link-box { width: 100%; background: #111; border: 1px solid #333; color: #00d2ff; padding: 10px; border-radius: 8px; font-size: 10px; margin-bottom: 15px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* Overlay Player */
+        #streamOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; }
+        .close-btn { position: absolute; top: 20px; right: 20px; z-index: 10001; background: red; color: white; border: none; padding: 5px 15px; border-radius: 5px; font-weight: bold; }
+    </style>
 </head>
 
 <body>
-
     <canvas id="particle-canvas"></canvas>
 
-    <nav class="navbar anim-entry">
-        <div class="container d-flex justify-content-between align-items-center position-relative">
-            <a href="#" class="navbar-brand text-decoration-none">
-                <i class="fa-solid fa-robot me-2" style="color: var(--accent-color);"></i> AV BOTZ
-            </a>
-            
-            <button id="menuToggle" class="menu-btn">
-                <i class="fa-solid fa-bars"></i> Menu
+    <div id="mainUI">
+        <!-- 4 Boxes (Dynamic Data via JS) -->
+        <div class="info-grid">
+            <div class="info-box"><span>Movie Name</span><strong id="m-name">Loading...</strong></div>
+            <div class="info-box"><span>Year</span><strong id="m-year">Unknown</strong></div>
+            <div class="info-box"><span>Language</span><strong id="m-lang">Multi</strong></div>
+            <div class="info-box"><span>Quality</span><strong id="m-quality">HD</strong></div>
+        </div>
+
+        <div class="action-container">
+            <!-- Watch Online (Click and Show Only Stream) -->
+            <button class="main-btn btn-watch" onclick="startStream()">
+                <i class="fa-solid fa-play"></i> Watch Online
             </button>
 
-            <div id="drawer" class="nav-drawer">
-                <a href="https://streming-template-eight.vercel.app/Disclaimer.html" class="menu-item drawer-link"><i class="fa-solid fa-triangle-exclamation"></i> Disclaimer</a>
-                <a href="https://streming-template-eight.vercel.app/Contact.html" class="menu-item drawer-link"><i class="fa-solid fa-envelope"></i> Contact Us</a>
-                <a href="https://streming-template-eight.vercel.app/About.html" class="menu-item drawer-link"><i class="fa-solid fa-circle-info"></i> About Us</a>
-                <a href="https://streming-template-eight.vercel.app/DMCA.html" class="menu-item drawer-link"><i class="fa-solid fa-bookmark"></i> DMCA</a>
-            </div>
-        </div>
-    </nav>
-
-    <main class="container py-4">
-
-        <div class="player-wrapper mb-4 anim-entry delay-1" id="videoContainer">
-            <video id="myVideo" playsinline controls class="w-100 h-100">
-                <source src="{{ file_url }}" type="video/mp4" />
-                <source src="{{ file_url }}" type="video/mkv" />
-                Your browser does not support the video tag.
-            </video>
+            <!-- Ultra Fast Download -->
+            <a href="{{ file_url }}" class="main-btn btn-download" rel="noopener">
+                <i class="fa-solid fa-bolt"></i> Fast Download (Server 1)
+            </a>
         </div>
 
-        <div class="glass-card anim-entry delay-2">
-            <div class="mb-3" style="color: var(--accent-color); font-weight: 700;">
-                <i class="fa-solid fa-circle-info me-2"></i> File Details
-            </div>
-            <div class="info-row">
-                <span style="color: #ccc;">Filename</span>
-                <span class="info-value">{{ file_name }}</span>
-            </div>
-            <div class="info-row">
-                <span style="color: #ccc;">Size</span>
-                <span class="info-value">{{ file_size }}</span>
-            </div>
+        <!-- External Players with Icons -->
+        <p class="text-center small text-muted mt-2">Open with External Apps:</p>
+        <div class="player-grid">
+            <a onclick="openApp('com.mxtech.videoplayer.ad')" class="p-btn"><i class="fa-solid fa-play" style="color:#2196F3"></i> MX Player</a>
+            <a onclick="openApp('org.videolan.vlc')" class="p-btn"><i class="fa-solid fa-cone" style="color:#FF9800"></i> VLC Player</a>
+            <a onclick="openApp('com.playit.videoplayer')" class="p-btn"><i class="fa-solid fa-circle-play" style="color:#00C853"></i> PlayIt</a>
+            <a onclick="openApp('com.vmate.video.editor')" class="p-btn"><i class="fa-solid fa-v" style="color:#f44336"></i> Vidmate</a>
+            <a onclick="openApp('com.google.android.apps.photos')" class="p-btn" style="grid-column: span 2; border-color: #ea4335;">
+                <i class="fa-brands fa-google" style="color:#ea4335"></i> Stream in Google Photos
+            </a>
         </div>
 
-        <div class="row g-2 mb-3 anim-entry delay-3">
-            <div class="col-6">
-                <a onclick="play_intent('com.mxtech.videoplayer.ad')" class="btn-glass">
-                    <i class="fa-solid fa-play"></i> MX Player
-                </a>
-            </div>
-            <div class="col-6">
-                <a onclick="play_intent('org.videolan.vlc')" class="btn-glass">
-                    <i class="fa-solid fa-cone"></i> VLC Player
-                </a>
-            </div>
-            <div class="col-12">
-                <a onclick="play_intent('com.playit.videoplayer')" class="btn-glass">
-                    <i class="fa-solid fa-circle-play"></i> PlayIt Player
-                </a>
-            </div>
+        <!-- Links Section -->
+        <div class="link-container">
+            <span class="link-label">Direct Link:</span>
+            <div class="link-box" onclick="copyText('{{ file_url }}')">{{ file_url }}</div>
             
-            <div class="col-12">
-                <button onclick="shareLink()" class="btn-glass btn-share">
-                    <i class="fa-solid fa-share-nodes"></i> Share with Friends
-                </button>
+            <span class="link-label">Embed Stream Code:</span>
+            <div class="link-box" onclick="copyText('<iframe src=\'{{ file_url }}\' width=\'100%\' height=\'400\' frameborder=\'0\' allowfullscreen></iframe>')">
+                &lt;iframe src="{{ file_url }}" width="100%" height="400" allowfullscreen&gt;&lt;/iframe&gt;
             </div>
-        </div>
-
-        <div class="row g-2 anim-entry delay-3">
-            <div class="col-6">
-                <a href="{{ file_url }}" class="btn-glass">
-                    <i class="fa-solid fa-cloud-arrow-down"></i> Download
-                </a>
-            </div>
-            <div class="col-6">
-                <a href="{{ file_get }}" target="_blank" class="btn-glass btn-telegram">
-                    <i class="fa-brands fa-telegram"></i> Telegram
-                </a>
-            </div>
-            <div class="col-12">
-                <a href="tg://resolve?domain=AV_SUPPORT_GROUP" class="btn-glass btn-report">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Report Error / Disclaimer
-                </a>
-            </div>
-        </div>
-
-        <div class="glass-card anim-entry delay-3 mt-4 text-center">
-            <h5 style="color: var(--accent-color); font-weight: 800;">📣 Stay Connected with AV BOTZ</h5>
-            <p class="small text-white-50 mt-2">
-                Join our official Telegram channel to get:<br>
-                🔑 Latest password updates • 🎁 Bonus files & rewards<br>
-                🚀 Early access to new features
-            </p>
-            <a href="tg://resolve?domain=AV_BOTz_UPDATE" class="btn-glass btn-telegram mt-2">
-                <i class="fa-brands fa-telegram"></i> 🚀 Open in Telegram
-            </a>
-        </div>
-
-    </main>
-
-    <footer>
-        <div class="mb-2">
-            <i class="fa-solid fa-moon me-1"></i> 🌗 Smart Theme Enabled<br>
-            <span style="font-size: 10px; opacity: 0.6;">This page automatically adjusts its theme based on your device time.</span>
-        </div>
-        <p class="mb-0">🔹 Official content by AV BOTZ <br> @AV_BOTz_UPDATE &copy; 2025</p>
-        <p class="text-danger mt-2" style="font-size: 0.7rem;">⚠️ Sharing or re-uploading this content without credit is strictly prohibited.</p>
-    </footer>
-
-    <a href="https://t.me/AV_OWNER_BOT" target="_blank" class="floating-btn">
-         <i class="fa-solid fa-comments"></i> 💬 Need Help?
-    </a>
-
-    <div id="supportPopup" class="popup-overlay">
-        <div class="popup-content">
-            <span class="close-btn" onclick="toggleSupport()">×</span>
-            <h4 class="mb-3">🤝 Need Assistance?</h4>
-            <p class="text-white-50">Having trouble with playback, download, or access issues? Our support team is available on Telegram.</p>
-            <a href="tg://resolve?domain=AV_BOTz_UPDATE" class="btn-glass btn-telegram">
-                👉 Chat on Telegram
-            </a>
-            <div class="mt-3 small text-muted">Fast replies • Trusted support • 24/7 updates</div>
         </div>
     </div>
 
-    <div id="securityModal" class="popup-overlay">
-        <div class="popup-content border-danger">
-            <div class="text-danger display-4 mb-2"><i class="fa-solid fa-shield-halved"></i></div>
-            <h4 class="text-danger">🚫 Restricted Action Detected</h4>
-            <p>Developer tools are disabled on this page to protect content integrity.</p>
-            <p class="small text-white-50">⚠️ Any suspicious activity may lead to temporary access restriction.</p>
-            <button class="btn-glass" onclick="closeSecurity()">✅ I Understand</button>
-        </div>
+    <!-- Full Screen Player (Hidden by default) -->
+    <div id="streamOverlay">
+        <button class="close-btn" onclick="closeStream()">CLOSE X</button>
+        <video id="player" playsinline controls crossorigin>
+            <source src="{{ file_url }}" type="video/mp4" />
+        </video>
     </div>
-
-    <script>
-        window.siteConfig = {
-            thumbnailUrl: "https://img.sanishtech.com/u/29b202409346d1bc163738eb0cab22fa.png",
-            watermarkText: "@AV_BOTz_UPDATE",
-            videoUrl: "{{ file_url }}" 
-        };
-    </script>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-    <script src="https://av-botz.vercel.app/2626/script.js"></script>
+    <script>
+        // Filename Parser: extract info from {{ file_name }}
+        function parseFilename() {
+            const fileName = "{{ file_name }}";
+            
+            // Extract Year (4 digits starting with 19 or 20)
+            const yearMatch = fileName.match(/(19|20)\d{2}/);
+            document.getElementById('m-year').innerText = yearMatch ? yearMatch[0] : "N/A";
+
+            // Extract Quality (1080p, 720p, 4k etc)
+            const qualityMatch = fileName.match(/\d{3,4}p|4K|HDR/i);
+            document.getElementById('m-quality').innerText = qualityMatch ? qualityMatch[0].toUpperCase() : "Web-DL";
+
+            // Extract Language (Hindi, English, Dual, etc)
+            const langMatch = fileName.match(/Hindi|English|Bengali|Tamil|Telugu|Dual|Multi/i);
+            document.getElementById('m-lang').innerText = langMatch ? langMatch[0] : "Multi Audio";
+
+            // Clean Movie Name (Remove year and everything after it)
+            let name = fileName.split(/(19|20)\d{2}/)[0].replace(/[._]/g, ' ').trim();
+            document.getElementById('m-name').innerText = name || "Movie File";
+        }
+
+        // Initialize Player with Sound Support
+        const player = new Plyr('#player', {
+            quality: { default: 1080, options: [4320, 2160, 1080, 720, 480] }
+        });
+
+        function startStream() {
+            document.getElementById('mainUI').style.display = 'none';
+            document.getElementById('streamOverlay').style.display = 'block';
+            player.play();
+        }
+
+        function closeStream() {
+            player.pause();
+            document.getElementById('streamOverlay').style.display = 'none';
+            document.getElementById('mainUI').style.display = 'block';
+        }
+
+        function openApp(pkg) {
+            window.location.href = `intent:{{ file_url }}#Intent;package=${pkg};end`;
+        }
+
+        function copyText(txt) {
+            navigator.clipboard.writeText(txt);
+            alert("Copied!");
+        }
+
+        window.onload = parseFilename;
+    </script>
 </body>
 </html>

@@ -18,44 +18,37 @@
         :root { --accent: #00d2ff; --pink-glow: #a55eea; --glass: rgba(255, 255, 255, 0.05); }
         body { font-family: 'Outfit', sans-serif; background: #0a0a0b; color: white; margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* 4 Info Boxes */
         .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 15px; }
         .info-box { background: var(--glass); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        .info-box span { display: block; font-size: 10px; color: #888; text-transform: uppercase; }
         .info-box strong { color: var(--accent); font-size: 13px; display: block; margin-top: 2px; }
 
-        /* Timer Box */
         .timer-box { background: rgba(255, 0, 0, 0.1); border: 1px solid rgba(255, 0, 0, 0.3); padding: 8px; margin: 0 15px 15px; border-radius: 8px; text-align: center; color: #ff6b6b; font-size: 12px; font-weight: bold; }
 
-        /* Action Buttons */
         .action-container { padding: 0 15px; }
-        .main-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; color: white; cursor: pointer; font-size: 16px; }
+        .main-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; color: white; cursor: pointer; font-size: 16px; transition: 0.2s; }
         
-        /* Pink Watch Button */
         .btn-watch { background: linear-gradient(45deg, #a55eea, #4b7bec); box-shadow: 0 4px 15px rgba(165,94,234,0.4); }
         .btn-download { background: #2ecc71; box-shadow: 0 4px 15px rgba(46,204,113,0.3); }
         .btn-telegram { background: #0088cc; }
         
-        /* External Players Grid */
         .player-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px; }
         .p-btn { background: var(--glass); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); color: white; text-decoration: none; font-size: 12px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; cursor: pointer; }
 
-        /* Pink Link Boxes */
         .link-container { margin: 25px 15px; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px solid #222; }
-        .link-label { font-size: 11px; color: #666; margin-bottom: 5px; display: block; font-weight: 600; }
         .link-box { width: 100%; background: #111; border: 1px solid #333; color: var(--pink-glow); padding: 10px; border-radius: 8px; font-size: 10px; margin-bottom: 10px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-left: 3px solid var(--pink-glow); }
 
-        /* --- Full Screen Stream Overlay --- */
-        #streamOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; }
+        /* --- Full Screen Stream Overlay (Improved) --- */
+        #streamOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         
-        /* Close Button - (Middle Left) */
-        .close-stream { position: absolute; top: 50%; left: 20px; transform: translateY(-50%); z-index: 10005; background: #ff4757; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        /* Close Button - Top Left corner */
+        .close-stream { position: absolute; top: 15px; left: 15px; z-index: 10005; background: #ff4757; color: white; border: none; padding: 6px 14px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 12px; }
 
-        /* Watermark - (Middle Right) */
-        .player-watermark { position: absolute; top: 50%; right: 20px; transform: translateY(-50%); z-index: 10005; font-size: 14px; font-weight: 800; color: rgba(255,255,255,0.3); pointer-events: none; letter-spacing: 1px; }
+        /* Watermark - Top Right corner */
+        .player-watermark { position: absolute; top: 18px; right: 18px; z-index: 10005; font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.4); pointer-events: none; }
 
-        /* Centering player UI slightly higher for better visibility */
-        .plyr--full-ui.plyr--video .plyr__controls { padding-bottom: 60px !important; }
+        /* Video Container to fix "Red Gap" issue */
+        .video-player-container { width: 100%; max-width: 1200px; max-height: 100vh; position: relative; }
+        .plyr--video { border-radius: 0; }
     </style>
 </head>
 
@@ -63,112 +56,100 @@
     <canvas id="particle-canvas"></canvas>
 
     <div id="mainUI">
-        <!-- 4 Data Boxes (Auto-Parsed) -->
+        <!-- Data Boxes -->
         <div class="info-grid">
             <div class="info-box"><span>Movie Name</span><strong id="m-name">Parsing...</strong></div>
-            <div class="info-box"><span>Language</span><strong id="m-lang">Dual/Multi</strong></div>
+            <div class="info-box"><span>Language</span><strong id="m-lang">Multi Audio</strong></div>
             <div class="info-box"><span>Year</span><strong id="m-year">2024</strong></div>
             <div class="info-box"><span>Quality</span><strong id="m-quality">1080p</strong></div>
         </div>
 
-        <!-- 10 Minute Countdown -->
         <div class="timer-box">
-            <i class="fa-solid fa-clock-rotate-left"></i> ফাইল ডিলিট হতে বাকি: <span id="countdown">10:00</span>
+            <i class="fa-solid fa-clock"></i> ফাইল ডিলিট হতে বাকি: <span id="countdown">10:00</span>
         </div>
 
-        <!-- Main Buttons -->
         <div class="action-container">
-            <!-- Watch Online (Pink/Glow Style) -->
+            <!-- Watch Online (Stream Link) -->
             <button class="main-btn btn-watch" onclick="startStream()">
                 <i class="fa-solid fa-circle-play"></i> Watch Online
             </button>
 
-            <!-- Super Fast Download (Instant Logic) -->
+            <!-- Download Button (Triggers Direct Download) -->
             <a href="{{ file_url }}" download="{{ file_name }}" class="main-btn btn-download">
-                <i class="fa-solid fa-bolt"></i> Ultra Fast Download
+                <i class="fa-solid fa-cloud-arrow-down"></i> Download File Now
             </a>
 
-            <!-- Telegram Link -->
             <a href="{{ file_get }}" target="_blank" class="main-btn btn-telegram">
-                <i class="fa-brands fa-telegram"></i> View on Telegram File
+                <i class="fa-brands fa-telegram"></i> View in Telegram
             </a>
         </div>
 
-        <!-- External Player Apps -->
+        <!-- External Apps -->
         <div class="player-grid">
             <a onclick="openApp('com.mxtech.videoplayer.ad')" class="p-btn"><i class="fa-solid fa-play" style="color: #2196F3;"></i> MX Player</a>
             <a onclick="openApp('org.videolan.vlc')" class="p-btn"><i class="fa-solid fa-cone" style="color: #FF9800;"></i> VLC Player</a>
             <a onclick="openApp('com.playit.videoplayer')" class="p-btn"><i class="fa-solid fa-circle-play" style="color: #00C853;"></i> PlayIt Player</a>
-            <a onclick="openApp('com.kmplayer')" class="p-btn"><i class="fa-solid fa-film" style="color: #9C27B0;"></i> KMPlayer</a>
-            <a onclick="openApp('com.google.android.apps.photos')" class="p-btn" style="border-color: #ea4335;">
-                <i class="fa-brands fa-google" style="color: #ea4335;"></i> Google Photos
-            </a>
+            <a onclick="openApp('com.google.android.apps.photos')" class="p-btn"><i class="fa-brands fa-google" style="color: #ea4335;"></i> Google Photos</a>
             <a onclick="openApp('idm.internet.download.manager')" class="p-btn" style="grid-column: span 2; border-color: #00d2ff; color: #00d2ff;">
-                <i class="fa-solid fa-download"></i> Stream in ADM/1DM (Turbo Speed)
+                <i class="fa-solid fa-bolt"></i> Stream in ADM/1DM (High Speed)
             </a>
         </div>
 
-        <!-- Link Boxes (Both Show Stream URL) -->
+        <!-- Links (All use direct Stream Link) -->
         <div class="link-container">
-            <span class="link-label">Direct Stream Link:</span>
+            <span style="font-size: 11px; color:#777; margin-left: 5px;">Direct Stream Link:</span>
             <div class="link-box" onclick="copyText('{{ file_url }}')">{{ file_url }}</div>
             
-            <span class="link-label">Embed Code (Stream URL):</span>
+            <span style="font-size: 11px; color:#777; margin-left: 5px;">Embed Code (Stream URL):</span>
             <div class="link-box" onclick="copyText('<iframe src=\'{{ file_url }}\' width=\'100%\' height=\'400\' allowfullscreen></iframe>')">
                 {{ file_url }}
             </div>
         </div>
     </div>
 
-    <!-- Video Streaming Overlay -->
-    <div id="streamOverlay">
-        <!-- Close and Watermark in Middle Horizontal Level -->
+    <!-- Overlay Stream Player -->
+    <div id="streamOverlay" style="display: none;">
         <button class="close-stream" onclick="closeStream()">CLOSE X</button>
         <div class="player-watermark">@AV_BOTz_UPDATE</div>
         
-        <video id="player" playsinline controls crossorigin="anonymous">
-            <source src="{{ file_url }}" type="video/mp4" />
-            <source src="{{ file_url }}" type="video/x-matroska" />
-        </video>
+        <div class="video-player-container">
+            <video id="player" playsinline controls crossorigin="anonymous">
+                <source src="{{ file_url }}" type="video/mp4" />
+                <source src="{{ file_url }}" type="video/x-matroska" />
+            </video>
+        </div>
     </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
-        // 1. Filename Data Auto-Parser
         function parseInfo() {
             const fName = "{{ file_name }}";
             const year = fName.match(/(19|20)\d{2}/);
             const qual = fName.match(/\d{3,4}p|4K|HDR/i);
-            const lang = fName.match(/Hindi|English|Dual|Multi|Bengali/i);
+            const lang = fName.match(/Hindi|English|Bengali|Dual|Multi/i);
 
             document.getElementById('m-name').innerText = fName.split(/(19|20)\d{2}/)[0].replace(/[._]/g, ' ').trim() || "Movie File";
             document.getElementById('m-year').innerText = year ? year[0] : "N/A";
-            document.getElementById('m-quality').innerText = qual ? qual[0].toUpperCase() : "WEB-DL";
+            document.getElementById('m-quality').innerText = qual ? qual[0].toUpperCase() : "1080p";
             document.getElementById('m-lang').innerText = lang ? lang[0] : "Multi Audio";
         }
 
-        // 2. Countdown Timer (10 Min)
         let secondsLeft = 600; 
-        const timerObj = document.getElementById('countdown');
         setInterval(() => {
-            if(secondsLeft <= 0) {
-                timerObj.innerText = "Link Expired!";
-                return;
-            }
+            if(secondsLeft <= 0) return;
             secondsLeft--;
             let m = Math.floor(secondsLeft / 60);
             let s = secondsLeft % 60;
-            timerObj.innerText = `${m}:${s < 10 ? '0'+s : s}`;
+            document.getElementById('countdown').innerText = `${m}:${s < 10 ? '0'+s : s}`;
         }, 1000);
 
-        // 3. Player Logic (Audio Optimized)
         const player = new Plyr('#player', {
             quality: { default: 1080, options: [2160, 1080, 720, 480] }
         });
 
         function startStream() {
             document.getElementById('mainUI').style.display = 'none';
-            document.getElementById('streamOverlay').style.display = 'block';
+            document.getElementById('streamOverlay').style.display = 'flex';
             player.play();
         }
 
@@ -178,15 +159,13 @@
             document.getElementById('mainUI').style.display = 'block';
         }
 
-        // External Player Intents
         function openApp(pkg) {
-            const url = "{{ file_url }}";
-            window.location.href = `intent:${url}#Intent;package=${pkg};S.title={{ file_name }};end`;
+            window.location.href = `intent:{{ file_url }}#Intent;package=${pkg};S.title={{ file_name }};end`;
         }
 
-        function copyText(val) {
-            navigator.clipboard.writeText(val);
-            alert("Copied!");
+        function copyText(v) {
+            navigator.clipboard.writeText(v);
+            alert("কপি করা হয়েছে!");
         }
 
         window.onload = parseInfo;

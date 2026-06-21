@@ -18,7 +18,7 @@
         :root { --accent: #00d2ff; --glass: rgba(255, 255, 255, 0.05); }
         body { font-family: 'Outfit', sans-serif; background: #0a0a0b; color: white; margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* 4 Data Boxes */
+        /* 4 Info Boxes */
         .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 15px; }
         .info-box { background: var(--glass); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
         .info-box strong { color: var(--accent); font-size: 13px; display: block; margin-top: 2px; }
@@ -40,14 +40,14 @@
         /* Step Count Badge */
         .step-badge { position: absolute; top: 0; right: 0; background: yellow; color: #000; font-size: 9px; padding: 1px 6px; border-bottom-left-radius: 8px; font-weight: 900; }
 
-        /* Overlay Stream Player (TikTok Fix) */
-        #streamOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        /* Full Screen Overlay (TikTok Style Fix) */
+        #streamOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
         .close-stream { position: absolute; top: 15px; left: 15px; z-index: 10005; background: #ff4757; color: white; border: none; padding: 6px 14px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 12px; }
         .player-watermark { position: absolute; top: 18px; right: 18px; z-index: 10005; font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.4); pointer-events: none; }
 
-        .video-player-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; }
-        #player { max-height: 100vh; width: auto; max-width: 100%; }
-        .plyr--video { height: auto !important; width: 100% !important; max-height: 100vh; }
+        .video-player-container { width: 100%; height: 100%; max-height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; }
+        #player { max-height: 100vh; width: auto; max-width: 100%; object-fit: contain; }
+        .plyr--video { height: auto !important; width: 100% !important; max-height: 100vh; background: transparent !important; }
     </style>
 </head>
 
@@ -70,25 +70,25 @@
         <!-- Main Buttons -->
         <div class="action-container">
             <button class="main-btn btn-watch" onclick="handleDynamicStep(this, startStream)">
-                <span class="step-badge">Loading...</span>
+                <span class="step-badge">..</span>
                 <i class="fa-solid fa-circle-play"></i> <span>Watch Online</span>
             </button>
 
-            <button class="main-btn btn-download" onclick="handleDynamicStep(this, () => window.location.href = '{{ file_url }}')">
-                <span class="step-badge">Loading...</span>
+            <button class="main-btn btn-download" onclick="handleDynamicStep(this, forceDownload)">
+                <span class="step-badge">..</span>
                 <i class="fa-solid fa-cloud-arrow-down"></i> <span>Download Now</span>
             </button>
 
-            <button class="main-btn btn-telegram" onclick="handleDynamicStep(this, () => window.open('{{ file_get }}', '_blank'))">
-                <span class="step-badge">Loading...</span>
+            <button class="main-btn btn-telegram" onclick="handleDynamicStep(this, openTelegram)">
+                <span class="step-badge">..</span>
                 <i class="fa-brands fa-telegram"></i> <span>View in Telegram</span>
             </button>
         </div>
 
         <!-- External Players Grid -->
         <div class="player-grid">
-            <div onclick="handleDynamicStep(this, () => openApp('com.mxtech.videoplayer.ad'))" class="p-btn"><span class="step-badge">..</span><i class="fa-solid fa-play" style="color: #2196F3;"></i> MX Player</div>
-            <div onclick="handleDynamicStep(this, () => openApp('org.videolan.vlc'))" class="p-btn"><span class="step-badge">..</span><i class="fa-solid fa-cone" style="color: #FF9800;"></i> VLC Player</div>
+            <div onclick="handleDynamicStep(this, () => openApp('com.mxtech.videoplayer.ad'))" class="p-btn"><span class="step-badge">..</span><i class="fa-solid fa-play" style="color: #2196F3;"></i> MX</div>
+            <div onclick="handleDynamicStep(this, () => openApp('org.videolan.vlc'))" class="p-btn"><span class="step-badge">..</span><i class="fa-solid fa-cone" style="color: #FF9800;"></i> VLC</div>
             <div onclick="handleDynamicStep(this, () => openApp('com.playit.videoplayer'))" class="p-btn"><span class="step-badge">..</span><i class="fa-solid fa-circle-play" style="color: #00C853;"></i> PlayIt</div>
             <div onclick="handleDynamicStep(this, () => openApp('com.google.android.apps.photos'))" class="p-btn"><span class="step-badge">..</span><i class="fa-brands fa-google" style="color: #ea4335;"></i> Photos</div>
         </div>
@@ -111,8 +111,8 @@
         // ==========================================
         // ১. এক জায়গায় কন্ট্রোল (কমানো/বাড়ানো)
         // ==========================================
-        const TOTAL_STEPS = 1; // এখানে ২ দিলে ২টা ক্লিক লাগবে, ১ দিলে ১টা।
-        const ADSTERRA_LINK = "https://www.effectivecpmnetwork.com/xqmb731x1?key=0267816362fc4320de630e064b317db1"; // আপনার এড লিংক
+        const TOTAL_STEPS = 1; // এখানে ৩ দিলে ৩টা ক্লিক লাগবে।
+        const ADSTERRA_LINK = "https://www.effectivecpmnetwork.com/xqmb731x1?key=0267816362fc4320de630e064b317db1"; 
 
         // ==========================================
 
@@ -124,21 +124,17 @@
             }
 
             let currentStep = btnStateTracker.get(btn);
-            let badge = btn.querySelector('.step-badge');
 
             if (currentStep <= TOTAL_STEPS) {
-                // এড ওপেন করা
                 window.open(ADSTERRA_LINK, '_blank');
                 
-                // পরবর্তী স্টেপে যাওয়া
                 if (currentStep < TOTAL_STEPS) {
                     btnStateTracker.set(btn, currentStep + 1);
                     updateBadgeText(btn);
                     alert(`Step ${currentStep} সম্পন্ন! পরবর্তী স্টেপের জন্য আবার ক্লিক করুন।`);
                 } else {
-                    // এটিই শেষ স্টেপ ছিল, এখন মেইন কাজ হবে
                     successAction();
-                    btnStateTracker.set(btn, 1); // রিসেট
+                    btnStateTracker.set(btn, 1);
                     updateBadgeText(btn);
                 }
             }
@@ -150,11 +146,18 @@
             if(badge) badge.innerText = `Step ${step}/${TOTAL_STEPS}`;
         }
 
-        // Initialize all badges on load
-        function initBadges() {
-            document.querySelectorAll('.main-btn, .p-btn').forEach(btn => {
-                updateBadgeText(btn);
-            });
+        // --- মেইন বাটন ফাংশনস ---
+        function forceDownload() {
+            const link = document.createElement('a');
+            link.href = "{{ file_url }}";
+            link.download = "{{ file_name }}";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function openTelegram() {
+            window.open('{{ file_get }}', '_blank');
         }
 
         function parseInfo() {
@@ -182,7 +185,7 @@
 
         window.onload = () => {
             parseInfo();
-            initBadges();
+            document.querySelectorAll('.main-btn, .p-btn').forEach(btn => updateBadgeText(btn));
         };
     </script>
 </body>

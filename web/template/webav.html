@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="https://img.sanishtech.com/u/62e636411ff87f8ccbdd9eb50eb18279.png" type="image/x-icon">
 
-    <!-- Styles & Fonts -->
+    <!-- Styles & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
@@ -16,33 +16,39 @@
 
     <style>
         :root { --accent: #00d2ff; --glass: rgba(255, 255, 255, 0.05); }
-        body { font-family: 'Outfit', sans-serif; background: #0a0a0b; color: white; margin: 0; padding: 0; }
+        body { font-family: 'Outfit', sans-serif; background: #0a0a0b; color: white; margin: 0; padding: 0; overflow-x: hidden; }
         
         /* 4 Data Boxes */
         .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 15px; }
         .info-box { background: var(--glass); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        .info-box span { display: block; font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .info-box span { display: block; font-size: 10px; color: #888; text-transform: uppercase; }
         .info-box strong { color: var(--accent); font-size: 13px; display: block; margin-top: 2px; }
+
+        /* Timer UI */
+        .timer-box { background: rgba(255, 0, 0, 0.1); border: 1px solid rgba(255, 0, 0, 0.3); padding: 8px; margin: 0 15px 15px; border-radius: 8px; text-align: center; color: #ff6b6b; font-size: 12px; font-weight: bold; }
 
         /* Buttons */
         .action-container { padding: 0 15px; }
-        .main-btn { width: 100%; padding: 16px; border-radius: 15px; border: none; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; color: white; transition: 0.3s; cursor: pointer; font-size: 16px; }
-        .btn-watch { background: linear-gradient(45deg, #00d2ff, #3a7bd5); box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4); }
-        .btn-download { background: linear-gradient(45deg, #2ecc71, #27ae60); }
+        .main-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; color: white; cursor: pointer; font-size: 16px; }
+        .btn-watch { background: linear-gradient(45deg, #00d2ff, #3a7bd5); box-shadow: 0 4px 15px rgba(0,210,255,0.3); }
+        .btn-download { background: #2ecc71; box-shadow: 0 4px 15px rgba(46,204,113,0.2); }
+        .btn-telegram { background: #0088cc; }
         
-        /* Player Grid */
-        .player-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 15px; }
-        .p-btn { background: var(--glass); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); color: white; text-decoration: none; font-size: 12px; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
-        .p-btn i { font-size: 16px; }
+        /* Players Grid */
+        .player-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px; }
+        .p-btn { background: var(--glass); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); color: white; text-decoration: none; font-size: 12px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; cursor: pointer; }
 
-        /* Links */
-        .link-container { margin: 25px 15px; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; border: 1px solid #222; }
+        /* Links Section */
+        .link-container { margin: 25px 15px; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px solid #222; }
         .link-label { font-size: 11px; color: #666; margin-bottom: 5px; display: block; font-weight: 600; }
-        .link-box { width: 100%; background: #111; border: 1px solid #333; color: #00d2ff; padding: 10px; border-radius: 8px; font-size: 10px; margin-bottom: 15px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .link-box { width: 100%; background: #111; border: 1px solid #333; color: #00d2ff; padding: 10px; border-radius: 8px; font-size: 10px; margin-bottom: 10px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* Overlay Player */
+        /* Stream Player Overlay */
         #streamOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; }
-        .close-btn { position: absolute; top: 20px; right: 20px; z-index: 10001; background: red; color: white; border: none; padding: 5px 15px; border-radius: 5px; font-weight: bold; }
+        .close-stream { position: absolute; top: 15px; left: 15px; z-index: 10001; background: rgba(255,0,0,0.8); color: white; border: none; padding: 4px 12px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        
+        /* Watermark Styles */
+        .player-watermark { position: absolute; top: 20px; right: 20px; z-index: 10000; font-size: 14px; font-weight: 800; color: rgba(255,255,255,0.4); pointer-events: none; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); font-family: 'Outfit', sans-serif; letter-spacing: 1px; }
     </style>
 </head>
 
@@ -50,84 +56,101 @@
     <canvas id="particle-canvas"></canvas>
 
     <div id="mainUI">
-        <!-- 4 Boxes (Dynamic Data via JS) -->
+        <!-- 4 Data Boxes (Auto-Parsed From Filename) -->
         <div class="info-grid">
-            <div class="info-box"><span>Movie Name</span><strong id="m-name">Loading...</strong></div>
-            <div class="info-box"><span>Year</span><strong id="m-year">Unknown</strong></div>
-            <div class="info-box"><span>Language</span><strong id="m-lang">Multi</strong></div>
+            <div class="info-box"><span>Movie Name</span><strong id="m-name">Parsing...</strong></div>
+            <div class="info-box"><span>Language</span><strong id="m-lang">Detecting...</strong></div>
+            <div class="info-box"><span>Year</span><strong id="m-year">...</strong></div>
             <div class="info-box"><span>Quality</span><strong id="m-quality">HD</strong></div>
         </div>
 
+        <!-- 10 Minute Countdown -->
+        <div class="timer-box">
+            <i class="fa-solid fa-clock"></i> ফাইলটি ডিলিট হতে বাকি: <span id="countdown">10:00</span>
+        </div>
+
+        <!-- Action Buttons -->
         <div class="action-container">
-            <!-- Watch Online (Click and Show Only Stream) -->
             <button class="main-btn btn-watch" onclick="startStream()">
-                <i class="fa-solid fa-play"></i> Watch Online
+                <i class="fa-solid fa-circle-play"></i> Watch Online
             </button>
 
-            <!-- Ultra Fast Download -->
-            <a href="{{ file_url }}" class="main-btn btn-download" rel="noopener">
-                <i class="fa-solid fa-bolt"></i> Fast Download (Server 1)
+            <!-- Super Fast Download -->
+            <a href="{{ file_url }}" download class="main-btn btn-download">
+                <i class="fa-solid fa-bolt"></i> Ultra Fast Download (Server 1)
+            </a>
+
+            <!-- Telegram File Link -->
+            <a href="{{ file_get }}" target="_blank" class="main-btn btn-telegram">
+                <i class="fa-brands fa-telegram"></i> Get Original Telegram File
             </a>
         </div>
 
-        <!-- External Players with Icons -->
-        <p class="text-center small text-muted mt-2">Open with External Apps:</p>
+        <!-- Player Icons Grid -->
         <div class="player-grid">
             <a onclick="openApp('com.mxtech.videoplayer.ad')" class="p-btn"><i class="fa-solid fa-play" style="color:#2196F3"></i> MX Player</a>
             <a onclick="openApp('org.videolan.vlc')" class="p-btn"><i class="fa-solid fa-cone" style="color:#FF9800"></i> VLC Player</a>
             <a onclick="openApp('com.playit.videoplayer')" class="p-btn"><i class="fa-solid fa-circle-play" style="color:#00C853"></i> PlayIt</a>
-            <a onclick="openApp('com.vmate.video.editor')" class="p-btn"><i class="fa-solid fa-v" style="color:#f44336"></i> Vidmate</a>
-            <a onclick="openApp('com.google.android.apps.photos')" class="p-btn" style="grid-column: span 2; border-color: #ea4335;">
-                <i class="fa-brands fa-google" style="color:#ea4335"></i> Stream in Google Photos
+            <a onclick="openApp('com.google.android.apps.photos')" class="p-btn"><i class="fa-brands fa-google" style="color:#ea4335"></i> Photos</a>
+            <a onclick="openApp('idm.internet.download.manager')" class="p-btn" style="grid-column: span 2; border-color: #00d2ff; color: #00d2ff;">
+                <i class="fa-solid fa-download"></i> Use ADM/1DM For 10x Speed Download
             </a>
         </div>
 
-        <!-- Links Section -->
+        <!-- Links and Embed -->
         <div class="link-container">
-            <span class="link-label">Direct Link:</span>
+            <span class="link-label">Direct Stream Link:</span>
             <div class="link-box" onclick="copyText('{{ file_url }}')">{{ file_url }}</div>
             
-            <span class="link-label">Embed Stream Code:</span>
+            <span class="link-label">Embed Code:</span>
             <div class="link-box" onclick="copyText('<iframe src=\'{{ file_url }}\' width=\'100%\' height=\'400\' frameborder=\'0\' allowfullscreen></iframe>')">
                 &lt;iframe src="{{ file_url }}" width="100%" height="400" allowfullscreen&gt;&lt;/iframe&gt;
             </div>
         </div>
     </div>
 
-    <!-- Full Screen Player (Hidden by default) -->
+    <!-- Full Screen Player with Watermark -->
     <div id="streamOverlay">
-        <button class="close-btn" onclick="closeStream()">CLOSE X</button>
-        <video id="player" playsinline controls crossorigin>
+        <button class="close-stream" onclick="closeStream()">CLOSE X</button>
+        <div class="player-watermark">@AV_BOTz_UPDATE</div> <!-- ওয়াটারমার্ক এখানে -->
+        <video id="player" playsinline controls crossorigin="anonymous">
             <source src="{{ file_url }}" type="video/mp4" />
+            <source src="{{ file_url }}" type="video/x-matroska" />
         </video>
     </div>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script>
-        // Filename Parser: extract info from {{ file_name }}
-        function parseFilename() {
-            const fileName = "{{ file_name }}";
-            
-            // Extract Year (4 digits starting with 19 or 20)
-            const yearMatch = fileName.match(/(19|20)\d{2}/);
+        // 1. Data Parser: ফাইলের নাম থেকে মুভি ইনফো বের করা
+        function parseMovieData() {
+            const fName = "{{ file_name }}";
+            const yearMatch = fName.match(/(19|20)\d{2}/);
+            const qualMatch = fName.match(/\d{3,4}p|4K|HDR/i);
+            const langMatch = fName.match(/Hindi|English|Bengali|Tamil|Telugu|Dual|Multi/i);
+
+            document.getElementById('m-name').innerText = fName.split(/(19|20)\d{2}/)[0].replace(/[._]/g, ' ').trim() || "Movie File";
             document.getElementById('m-year').innerText = yearMatch ? yearMatch[0] : "N/A";
-
-            // Extract Quality (1080p, 720p, 4k etc)
-            const qualityMatch = fileName.match(/\d{3,4}p|4K|HDR/i);
-            document.getElementById('m-quality').innerText = qualityMatch ? qualityMatch[0].toUpperCase() : "Web-DL";
-
-            // Extract Language (Hindi, English, Dual, etc)
-            const langMatch = fileName.match(/Hindi|English|Bengali|Tamil|Telugu|Dual|Multi/i);
+            document.getElementById('m-quality').innerText = qualMatch ? qualMatch[0].toUpperCase() : "1080p Web-DL";
             document.getElementById('m-lang').innerText = langMatch ? langMatch[0] : "Multi Audio";
-
-            // Clean Movie Name (Remove year and everything after it)
-            let name = fileName.split(/(19|20)\d{2}/)[0].replace(/[._]/g, ' ').trim();
-            document.getElementById('m-name').innerText = name || "Movie File";
         }
 
-        // Initialize Player with Sound Support
+        // 2. Countdown Timer (10 Minutes)
+        let timeLeft = 600;
+        const timerLabel = document.getElementById('countdown');
+        setInterval(() => {
+            if (timeLeft <= 0) {
+                timerLabel.innerText = "Link Expired!";
+                return;
+            }
+            timeLeft--;
+            let mins = Math.floor(timeLeft / 60);
+            let secs = timeLeft % 60;
+            timerLabel.innerText = `${mins}:${secs < 10 ? '0' + secs : secs}`;
+        }, 1000);
+
+        // 3. Plyr Engine (Sound Optimized)
         const player = new Plyr('#player', {
-            quality: { default: 1080, options: [4320, 2160, 1080, 720, 480] }
+            quality: { default: 1080, options: [2160, 1440, 1080, 720, 480] }
         });
 
         function startStream() {
@@ -151,7 +174,7 @@
             alert("Copied!");
         }
 
-        window.onload = parseFilename;
+        window.onload = parseMovieData;
     </script>
 </body>
 </html>

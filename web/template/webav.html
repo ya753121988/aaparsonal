@@ -138,14 +138,22 @@
             <div class="small opacity-50 mt-1">Size: {{ file_size }}</div>
         </div>
 
-        <!-- Downloads & Get File Button -->
+        <!-- Downloads & Get File Button (FIXED DOWNLOAD LOGIC) -->
         <div class="glass-card">
-            <div onclick="smartDownload('{{ file_url }}')" class="btn-glass btn-main py-3">
+            <a href="{{ file_url }}" download="{{ file_name }}" class="btn-glass btn-main py-3">
                 <i class="fa-solid fa-bolt"></i> HIGH SPEED DOWNLOAD
-            </div>
+            </a>
             <div class="row g-2 mt-1">
-                <div class="col-6"><div onclick="smartDownload('{{ file_url }}')" class="btn-glass"><i class="fa-solid fa-download"></i> DOWNLOAD</div></div>
-                <div class="col-6"><a href="{{ file_get }}" target="_blank" class="btn-glass btn-tg"><i class="fa-brands fa-telegram"></i> GET FILE</a></div>
+                <div class="col-6">
+                    <a href="{{ file_url }}" download="{{ file_name }}" class="btn-glass">
+                        <i class="fa-solid fa-download"></i> DOWNLOAD
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ file_get }}" target="_blank" class="btn-glass btn-tg">
+                        <i class="fa-brands fa-telegram"></i> GET FILE
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -181,9 +189,6 @@
     </div>
 
     <script>
-        // High Speed Download - New Tab
-        function smartDownload(url) { window.open(url, '_blank'); }
-
         // Share API Engine (3 Systems)
         async function shareAPI(title, link) {
             if (navigator.share) {
@@ -199,7 +204,7 @@
         setInterval(() => { canShowAd = true; document.getElementById('popunder-trigger').style.display = 'block'; }, 60000);
         function handlePopunder() {
             if(canShowAd) {
-                window.open('https://www.effectivecpmnetwork.com/xqmb731x1?key=0267816362fc4320de630e064b317db1', '_blank'); // আপনার অ্যাড লিংক এখানে দিন
+                window.open('https://www.effectivecpmnetwork.com/xqmb731x1?key=0267816362fc4320de630e064b317db1', '_blank'); 
                 canShowAd = false;
                 document.getElementById('popunder-trigger').style.display = 'none';
             }
@@ -229,7 +234,7 @@
             let startY = 0, startX = 0;
             const container = document.querySelector('#artplayer');
 
-            // LOCK DRAG: যখন প্লেয়ারে হাত দিবেন তখন পেজ নড়বে না
+            // LOCK DRAG
             container.addEventListener('touchmove', (e) => {
                 if (e.touches.length === 1) e.preventDefault(); 
             }, { passive: false });

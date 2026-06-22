@@ -34,9 +34,10 @@
             overflow-x: hidden;
         }
 
-        /* Embed Mode Style - এটি প্লেয়ারকে আলাদা করে দেখাবে */
+        /* EMBED MODE CSS */
+        body.is-embed { background: #000 !important; overflow: hidden; }
         body.is-embed .notice-bar, body.is-embed .navbar, body.is-embed .glass-card, body.is-embed .row, body.is-embed footer { display: none !important; }
-        body.is-embed #player-section { position: fixed; top: 0; left: 0; width: 100%; height: 100%; padding: 0; margin: 0; z-index: 9999; background: #000; }
+        body.is-embed #player-section { position: fixed; top: 0; left: 0; width: 100%; height: 100%; padding: 0; margin: 0; z-index: 9999; }
         body.is-embed .artplayer-app { height: 100vh !important; border-radius: 0; aspect-ratio: unset; }
 
         body.light-mode { background: #f0f2f5; color: #1a1a1a; }
@@ -80,12 +81,6 @@
             margin: 0 auto; 
         }
 
-        /* ছোট মোবাইলে আইকন ঠিক রাখার জন্য CSS */
-        @media (max-width: 450px) {
-            .art-control { padding: 0 4px !important; }
-            .art-control i { font-size: 18px !important; }
-        }
-
         #watchBtn {
             width: 100%; padding: 60px 20px; border: 2px dashed var(--accent);
             border-radius: 15px; text-align: center; cursor: pointer;
@@ -106,10 +101,11 @@
         
         #eyeCareOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 165, 0, 0.12); pointer-events: none; z-index: 9999; display: none; }
 
+        /* Embed Box Style */
         .embed-box { background: #000; border: 1px solid #333; color: var(--accent); font-family: monospace; font-size: 11px; padding: 10px; border-radius: 5px; width: 100%; margin-top: 10px; height: 60px; resize: none; }
     </style>
 </head>
-<body>
+<body id="mainBody">
 
     <div id="popunder-trigger" onclick="handlePopunder()"></div>
     <div id="eyeCareOverlay"></div>
@@ -161,11 +157,11 @@
             </div>
         </div>
 
-        <!-- EMBED SYSTEM - নতুন যোগ করা হয়েছে -->
+        <!-- EMBED SYSTEM - স্ট্রিম লিংক ফিক্সড -->
         <div class="glass-card">
             <div class="small fw-bold mb-1"><i class="fa-solid fa-code text-success"></i> Embed This Player</div>
             <textarea class="embed-box" readonly id="embedArea"></textarea>
-            <button class="btn btn-sm btn-outline-success mt-2 w-100" onclick="copyEmbed()">Copy Embed Code</button>
+            <button class="btn btn-sm btn-outline-success mt-2 w-100" onclick="copyEmbed()">Copy Player Embed Code</button>
         </div>
 
         <div class="glass-card">
@@ -197,18 +193,19 @@
     </div>
 
     <script>
-        // Embed Code Generation
-        const currentUrl = window.location.href.split('?')[0];
-        document.getElementById('embedArea').value = `<iframe src="${currentUrl}?embed=true" width="100%" height="300" frameborder="0" allowfullscreen></iframe>`;
+        // EMBED CODE GENERATOR - আপনার মেইন URL ব্যবহার করবে
+        const currentWatchUrl = window.location.href.split('?')[0];
+        document.getElementById('embedArea').value = `<iframe src="${currentWatchUrl}?embed=true" width="100%" height="300" frameborder="0" allowfullscreen scrolling="no"></iframe>`;
+        
         function copyEmbed() {
             const area = document.getElementById('embedArea'); area.select();
             document.execCommand('copy'); alert("Embed Code Copied!");
         }
 
-        // Embed Mode Detection
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('embed') === 'true') {
-            document.body.classList.add('is-embed');
+        // EMBED MODE DETECTION - এমবেড হলে শুধু প্লেয়ার দেখাবে
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('embed') === 'true') {
+            document.getElementById('mainBody').classList.add('is-embed');
             window.onload = initPlayer;
         }
 
@@ -270,10 +267,12 @@
                     {
                         position: 'right',
                         html: '<i class="fa-solid fa-arrows-rotate"></i>',
-                        tooltip: 'Fullscreen Rotate',
+                        tooltip: 'Fullscreen Rotation',
                         click: function () {
-                            // ল্যান্ডস্কেপ রোটেট করার সিস্টেম
-                            if (!art.fullscreen) { art.fullscreen = true; }
+                            // আপনার স্ক্রিনশট অনুযায়ী ফুলস্ক্রিন ও রোটেশন লজিক
+                            if (!art.fullscreen) {
+                                art.fullscreen = true;
+                            }
                             art.rotate = (art.rotate === 0) ? 90 : 0;
                         },
                     },
@@ -282,20 +281,19 @@
                 ]
             });
 
-            // ৪০০% সাউন্ড বুস্ট লজিক
+            // ৪০০০% সাউন্ড বুস্টার লজিক
             art.on('play', () => {
-                if (!window.audioBoosted) {
+                if (!art.audioCtx) {
                     try {
                         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                        const ctx = new AudioCtx();
-                        const source = ctx.createMediaElementSource(art.video);
-                        const gainNode = ctx.createGain();
-                        gainNode.gain.value = 4; // ৪ গুণ সাউন্ড (৪০০%)
+                        art.audioCtx = new AudioCtx();
+                        const source = art.audioCtx.createMediaElementSource(art.video);
+                        const gainNode = art.audioCtx.createGain();
+                        gainNode.gain.value = 4; // ৪০০% সাউন্ড
                         source.connect(gainNode);
-                        gainNode.connect(ctx.destination);
-                        window.audioBoosted = true;
+                        gainNode.connect(art.audioCtx.destination);
                         art.notice.show = 'Sound Boosted to 400%';
-                    } catch (e) { console.log("Boost Error"); }
+                    } catch (e) { console.log("Boost Failed"); }
                 }
             });
 

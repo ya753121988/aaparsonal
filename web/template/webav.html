@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <title>AV BOTZ | {{ file_name }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <link rel="icon" href="https://img.sanishtech.com/u/62e636411ff87f8ccbdd9eb50eb18279.png" type="image/x-icon">
     
     <!-- CSS & Icon Libraries -->
@@ -37,26 +37,46 @@
         body.light-mode .glass-card { background: #fff !important; border: 1px solid #ddd !important; color: #1a1a1a !important; }
         body.light-mode .btn-glass { background: #fff !important; border: 1px solid #ccc !important; color: #000 !important; }
         body.light-mode .control-btn { background: #eee; color: #000; }
-        body.light-mode #player-section { background: #f0f2f5; }
 
         /* Notice Bar */
-        .notice-bar { background: linear-gradient(90deg, #00ff88, #00b09b); color: #000; padding: 10px; font-weight: 800; text-align: center; font-size: 13px; z-index: 1001; }
+        .notice-bar { background: linear-gradient(90deg, #00ff88, #00b09b); color: #000; padding: 10px; font-weight: 800; text-align: center; font-size: 13px; z-index: 1001; position: relative; }
 
         /* Navbar */
         .navbar { padding: 15px 20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; }
 
         .main-container { max-width: 600px; margin: 0 auto; padding: 0px 15px 20px 15px; }
 
-        /* Adaptive Player Section - LOCKED POSITION */
+        /* PLAYER SECTION - FULLY LOCKED */
         #player-section {
-            width: 100%; border-radius: 0 0 15px 15px; overflow: hidden; background: var(--bg-dark);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
-            position: sticky; top: 60px; /* Navbar এর নিচে লক হয়ে থাকবে */
-            z-index: 999;
-            padding-top: 10px;
+            width: 100%; 
+            position: sticky; 
+            top: 0px; /* স্ক্রিনের একদম উপরে আটকে থাকবে */
+            z-index: 1100; 
+            background: var(--bg-dark); 
+            padding: 10px 0;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            /* ড্র্যাগ বা নড়াচড়া বন্ধ করার জন্য */
+            touch-action: none; 
         }
-        .artplayer-app { width: 100%; height: auto; aspect-ratio: 16/9; }
-        .artplayer-app[data-portrait="true"] { aspect-ratio: 9/16; max-height: 70vh; }
+        
+        body.light-mode #player-section { background: #f0f2f5; }
+
+        .artplayer-app { 
+            width: 100%; 
+            height: auto; 
+            aspect-ratio: 16/9; 
+            border-radius: 12px; 
+            overflow: hidden; 
+        }
+        
+        /* পোর্ট্রেট ভিডিও ফিক্স - যাতে স্ক্রিনের বাইরে না যায় */
+        .artplayer-app[data-portrait="true"] { 
+            aspect-ratio: 9/16; 
+            max-height: 60vh; 
+            width: auto; 
+            margin: 0 auto; 
+        }
 
         #watchBtn {
             width: 100%; padding: 60px 20px; border: 2px dashed var(--accent);
@@ -77,7 +97,7 @@
         .control-btn { border: none; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); color: #fff; display: flex; align-items: center; justify-content: center; }
 
         /* Floating Overlay for Popunder */
-        #popunder-trigger { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; display: none; }
+        #popunder-trigger { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1200; display: none; }
         
         #eyeCareOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 165, 0, 0.12); pointer-events: none; z-index: 9999; display: none; }
     </style>
@@ -112,52 +132,49 @@
             <div id="artplayer" class="artplayer-app" style="display:none;"></div>
         </div>
 
-        <!-- Scrollable Content Starts Here -->
-        <div class="content-scroll">
-            <!-- File Details Card -->
-            <div class="glass-card text-center">
-                <div class="fw-bold text-truncate">{{ file_name }}</div>
-                <div class="small opacity-50 mt-1">Size: {{ file_size }}</div>
-            </div>
+        <!-- File Details Card -->
+        <div class="glass-card text-center">
+            <div class="fw-bold text-truncate">{{ file_name }}</div>
+            <div class="small opacity-50 mt-1">Size: {{ file_size }}</div>
+        </div>
 
-            <!-- Downloads & Get File Button -->
-            <div class="glass-card">
-                <div onclick="smartDownload('{{ file_url }}')" class="btn-glass btn-main py-3">
-                    <i class="fa-solid fa-bolt"></i> HIGH SPEED DOWNLOAD
-                </div>
-                <div class="row g-2 mt-1">
-                    <div class="col-6"><div onclick="smartDownload('{{ file_url }}')" class="btn-glass"><i class="fa-solid fa-download"></i> DOWNLOAD</div></div>
-                    <div class="col-6"><a href="{{ file_get }}" target="_blank" class="btn-glass btn-tg"><i class="fa-brands fa-telegram"></i> GET FILE</a></div>
-                </div>
+        <!-- Downloads & Get File Button -->
+        <div class="glass-card">
+            <div onclick="smartDownload('{{ file_url }}')" class="btn-glass btn-main py-3">
+                <i class="fa-solid fa-bolt"></i> HIGH SPEED DOWNLOAD
             </div>
+            <div class="row g-2 mt-1">
+                <div class="col-6"><div onclick="smartDownload('{{ file_url }}')" class="btn-glass"><i class="fa-solid fa-download"></i> DOWNLOAD</div></div>
+                <div class="col-6"><a href="{{ file_get }}" target="_blank" class="btn-glass btn-tg"><i class="fa-brands fa-telegram"></i> GET FILE</a></div>
+            </div>
+        </div>
 
-            <!-- 3 Share Options Section -->
-            <div class="glass-card">
-                <div class="small fw-bold mb-2 opacity-75 text-center">SHARE LINKS</div>
-                <div class="row g-2">
-                    <div class="col-4"><div onclick="shareAPI('Video Link', window.location.href)" class="btn-glass small px-1"><i class="fa-solid fa-share-nodes"></i> Video</div></div>
-                    <div class="col-4"><div onclick="shareAPI('Download Link', '{{ file_url }}')" class="btn-glass small px-1"><i class="fa-solid fa-link"></i> File</div></div>
-                    <div class="col-4"><div onclick="shareAPI('TG Get File Link', '{{ file_get }}')" class="btn-glass small px-1"><i class="fa-brands fa-telegram"></i> TG Get</div></div>
-                </div>
+        <!-- 3 Share Options Section -->
+        <div class="glass-card">
+            <div class="small fw-bold mb-2 opacity-75 text-center">SHARE LINKS</div>
+            <div class="row g-2">
+                <div class="col-4"><div onclick="shareAPI('Video Link', window.location.href)" class="btn-glass small px-1"><i class="fa-solid fa-share-nodes"></i> Video</div></div>
+                <div class="col-4"><div onclick="shareAPI('Download Link', '{{ file_url }}')" class="btn-glass small px-1"><i class="fa-solid fa-link"></i> File</div></div>
+                <div class="col-4"><div onclick="shareAPI('TG Get File Link', '{{ file_get }}')" class="btn-glass small px-1"><i class="fa-brands fa-telegram"></i> TG Get</div></div>
             </div>
+        </div>
 
-            <!-- 4 Telegram Channels Section -->
-            <div class="glass-card">
-                <div class="fw-bold mb-2"><i class="fa-brands fa-telegram text-info"></i> Join Our Channels</div>
-                <div class="tg-grid">
-                    <a href="https://t.me/AV_BOTz_UPDATE" target="_blank" class="tg-btn"><i class="fa-solid fa-bullhorn"></i> Main Update</a>
-                    <a href="https://t.me/AV_MOVIES_UPDATE" target="_blank" class="tg-btn"><i class="fa-solid fa-film"></i> Movie Box</a>
-                    <a href="https://t.me/AV_SUPPORT_GROUP" target="_blank" class="tg-btn"><i class="fa-solid fa-headset"></i> Support</a>
-                    <a href="https://t.me/AV_BOTZ_BACKUP" target="_blank" class="tg-btn"><i class="fa-solid fa-database"></i> Backup</a>
-                </div>
+        <!-- 4 Telegram Channels Section -->
+        <div class="glass-card">
+            <div class="fw-bold mb-2"><i class="fa-brands fa-telegram text-info"></i> Join Our Channels</div>
+            <div class="tg-grid">
+                <a href="https://t.me/AV_BOTz_UPDATE" target="_blank" class="tg-btn"><i class="fa-solid fa-bullhorn"></i> Main Update</a>
+                <a href="https://t.me/AV_MOVIES_UPDATE" target="_blank" class="tg-btn"><i class="fa-solid fa-film"></i> Movie Box</a>
+                <a href="https://t.me/AV_SUPPORT_GROUP" target="_blank" class="tg-btn"><i class="fa-solid fa-headset"></i> Support</a>
+                <a href="https://t.me/AV_BOTZ_BACKUP" target="_blank" class="tg-btn"><i class="fa-solid fa-database"></i> Backup</a>
             </div>
+        </div>
 
-            <!-- External Players -->
-            <div class="row g-2 mb-4">
-                <div class="col-4"><div onclick="play_intent('com.mxtech.videoplayer.ad')" class="btn-glass small">MX Player</div></div>
-                <div class="col-4"><div onclick="play_intent('org.videolan.vlc')" class="btn-glass small">VLC Player</div></div>
-                <div class="col-4"><div onclick="play_intent('com.playit.videoplayer')" class="btn-glass small">PlayIt</div></div>
-            </div>
+        <!-- External Players -->
+        <div class="row g-2 mb-4">
+            <div class="col-4"><div onclick="play_intent('com.mxtech.videoplayer.ad')" class="btn-glass small">MX Player</div></div>
+            <div class="col-4"><div onclick="play_intent('org.videolan.vlc')" class="btn-glass small">VLC Player</div></div>
+            <div class="col-4"><div onclick="play_intent('com.playit.videoplayer')" class="btn-glass small">PlayIt</div></div>
         </div>
 
         <footer class="text-center opacity-50 small py-2">@AV_BOTz_UPDATE &copy; 2025</footer>
@@ -179,10 +196,10 @@
 
         // 10s Popunder Ad Engine
         let canShowAd = false;
-        setInterval(() => { canShowAd = true; document.getElementById('popunder-trigger').style.display = 'block'; }, 10000);
+        setInterval(() => { canShowAd = true; document.getElementById('popunder-trigger').style.display = 'block'; }, 60000);
         function handlePopunder() {
             if(canShowAd) {
-                window.open('https://www.google.com', '_blank'); // আপনার অ্যাড লিংক এখানে দিন
+                window.open('https://www.effectivecpmnetwork.com/xqmb731x1?key=0267816362fc4320de630e064b317db1', '_blank'); // আপনার অ্যাড লিংক এখানে দিন
                 canShowAd = false;
                 document.getElementById('popunder-trigger').style.display = 'none';
             }
@@ -211,10 +228,17 @@
             // System: Mobile Swipe for Brightness & Volume
             let startY = 0, startX = 0;
             const container = document.querySelector('#artplayer');
+
+            // LOCK DRAG: যখন প্লেয়ারে হাত দিবেন তখন পেজ নড়বে না
+            container.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1) e.preventDefault(); 
+            }, { passive: false });
+
             container.addEventListener('touchstart', (e) => { 
                 startY = e.touches[0].clientY; 
                 startX = e.touches[0].clientX;
             });
+
             container.addEventListener('touchmove', (e) => {
                 const deltaY = startY - e.touches[0].clientY;
                 const rect = container.getBoundingClientRect();

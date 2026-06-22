@@ -1,115 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <title>AV BOTZ | {{ file_name }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="https://img.sanishtech.com/u/62e636411ff87f8ccbdd9eb50eb18279.png" type="image/x-icon">
-
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    
+    <!-- ArtPlayer for Gestures and Advanced Controls -->
+    <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://av-botz.vercel.app/2626/style.css">
+
+    <style>
+        :root { --accent-color: #00ff88; }
+        body.light-mode { background: #f0f2f5; color: #1a1a1a; }
+        body.light-mode .glass-card { background: rgba(255, 255, 255, 0.8); color: #000; border: 1px solid #ddd; }
+        
+        .artplayer-app { width: 100%; height: 250px; border-radius: 12px; overflow: hidden; margin-bottom: 20px; display: none; }
+        #watchBtn { width: 100%; padding: 50px 0; background: rgba(255, 255, 255, 0.1); border: 2px dashed var(--accent-color); border-radius: 15px; color: #fff; font-weight: bold; cursor: pointer; text-align: center; }
+        
+        /* Eye Protection Overlay */
+        #eyeCareOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 165, 0, 0.15); pointer-events: none; z-index: 9999; display: none; }
+        
+        .floating-controls { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; }
+        .control-btn { padding: 8px 15px; border-radius: 20px; border: none; background: rgba(255,255,255,0.1); color: #fff; font-size: 14px; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); }
+        
+        .watermark { position: absolute; top: 10px; right: 10px; font-size: 12px; color: rgba(255,255,255,0.6); pointer-events: none; z-index: 10; font-weight: bold; }
+    </style>
 </head>
 
-<body>
-    <!-- স্ক্রিপ্ট এরর এড়াতে এই এলিমেন্টটি রাখা জরুরি -->
-    <canvas id="particle-canvas" style="display: none;"></canvas>
+<body class="dark-mode">
+    <div id="eyeCareOverlay"></div>
+    <canvas id="particle-canvas" style="display:none;"></canvas>
 
-    <nav class="navbar anim-entry">
-        <div class="container d-flex justify-content-center">
-            <a href="#" class="navbar-brand text-decoration-none">
-                <i class="fa-solid fa-robot me-2" style="color: var(--accent-color);"></i> AV BOTZ
-            </a>
+    <nav class="navbar mb-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span class="navbar-brand"><i class="fa-solid fa-robot"></i> AV BOTZ</span>
+            <div class="d-flex gap-2">
+                <button class="control-btn" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i></button>
+                <button class="control-btn" onclick="toggleEyeCare()"><i class="fa-solid fa-eye"></i></button>
+            </div>
         </div>
     </nav>
 
-    <main class="container py-4">
+    <main class="container">
+        
+        <!-- Stream Section -->
+        <div id="watchBtn" onclick="initPlayer()">
+            <i class="fa-solid fa-circle-play fa-3x mb-2"></i><br>
+            WATCH ONLINE (STREAM)
+        </div>
+        <div class="artplayer-app" id="videoContainer"></div>
 
-        <!-- Watch Stream (Player) -->
-        <div class="player-wrapper mb-4 anim-entry delay-1" id="videoContainer">
-            <video id="myVideo" playsinline controls class="w-100 h-100">
-                <source src="{{ file_url }}" type="video/mp4" />
-                <source src="{{ file_url }}" type="video/mkv" />
-                Your browser does not support the video tag.
-            </video>
+        <div class="glass-card mb-3 text-center">
+            <h6 class="text-truncate">{{ file_name }}</h6>
+            <small class="text-white-50">Size: {{ file_size }}</small>
         </div>
 
-        <!-- File Details -->
-        <div class="glass-card anim-entry delay-2 mb-3">
-            <div class="info-row">
-                <span style="color: #ccc;">File: {{ file_name }}</span>
-            </div>
-            <div class="info-row">
-                <span style="color: #ccc;">Size: {{ file_size }}</span>
-            </div>
-        </div>
-
-        <!-- External Players (MX, VLC, PlayIt) -->
-        <div class="row g-2 mb-3 anim-entry delay-3">
-            <div class="col-6">
-                <a onclick="play_intent('com.mxtech.videoplayer.ad')" class="btn-glass">
-                    <i class="fa-solid fa-play"></i> MX Player
-                </a>
-            </div>
-            <div class="col-6">
-                <a onclick="play_intent('org.videolan.vlc')" class="btn-glass">
-                    <i class="fa-solid fa-cone"></i> VLC Player
-                </a>
-            </div>
+        <!-- Download Buttons (Exact same logic as your bot link) -->
+        <div class="row g-2 mb-4">
             <div class="col-12">
-                <a onclick="play_intent('com.playit.videoplayer')" class="btn-glass">
-                    <i class="fa-solid fa-circle-play"></i> PlayIt Player
+                <a href="{{ file_url }}" download class="btn-glass" style="background: linear-gradient(45deg, #00b09b, #96c93d); border:none;">
+                    <i class="fa-solid fa-bolt"></i> FAST DOWNLOAD
                 </a>
             </div>
-        </div>
-
-        <!-- Download Buttons (আপনার অরিজিনাল সিস্টেম অনুযায়ী) -->
-        <div class="row g-2 anim-entry delay-3">
-            <!-- First Download -->
-            <div class="col-12">
-                <a href="{{ file_url }}" download class="btn-glass" style="background: rgba(0, 255, 136, 0.15) !important; border: 1px solid #00ff88;">
-                    <i class="fa-solid fa-bolt"></i> First Download (High Speed)
-                </a>
-            </div>
-            
-            <!-- Standard Download -->
             <div class="col-6">
                 <a href="{{ file_url }}" download class="btn-glass">
-                    <i class="fa-solid fa-cloud-arrow-down"></i> Download
+                    <i class="fa-solid fa-cloud-arrow-down"></i> DOWNLOAD
                 </a>
             </div>
-
-            <!-- Telegram Get File -->
             <div class="col-6">
                 <a href="{{ file_get }}" target="_blank" class="btn-glass btn-telegram">
-                    <i class="fa-brands fa-telegram"></i> Telegram Get File
+                    <i class="fa-brands fa-telegram"></i> GET FILE
                 </a>
+            </div>
+        </div>
+
+        <!-- External Players -->
+        <div class="row g-2 mb-4">
+            <div class="col-4">
+                <a onclick="play_intent('com.mxtech.videoplayer.ad')" class="btn-glass p-2 small">MX Player</a>
+            </div>
+            <div class="col-4">
+                <a onclick="play_intent('org.videolan.vlc')" class="btn-glass p-2 small">VLC Player</a>
+            </div>
+            <div class="col-4">
+                <a onclick="play_intent('com.playit.videoplayer')" class="btn-glass p-2 small">PlayIt</a>
             </div>
         </div>
 
     </main>
 
-    <!-- ফালতু পপআপগুলো স্ক্রিপ্ট এরর বন্ধ করতে হাইড অবস্থায় রাখা হয়েছে -->
-    <div id="securityModal" style="display: none;"></div>
-    <div id="supportPopup" style="display: none;"></div>
-    <div id="drawer" style="display: none;"></div>
-
-    <footer class="text-center py-4">
-        <p class="mb-0">🔹 Official content by AV BOTZ <br> @AV_BOTz_UPDATE &copy; 2025</p>
+    <footer class="text-center pb-4 small opacity-50">
+        @AV_BOTz_UPDATE &copy; 2025
     </footer>
 
-    <script>
-        window.siteConfig = {
-            thumbnailUrl: "https://img.sanishtech.com/u/29b202409346d1bc163738eb0cab22fa.png",
-            watermarkText: "@AV_BOTz_UPDATE",
-            videoUrl: "{{ file_url }}" 
-        };
-    </script>
+    <!-- Hidden elements for script stability -->
+    <div id="securityModal" style="display:none;"></div>
+    <div id="supportPopup" style="display:none;"></div>
+    <div id="drawer" style="display:none;"></div>
 
-    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script>
+        // Player Initialization with Gestures and Controls
+        function initPlayer() {
+            document.getElementById('watchBtn').style.display = 'none';
+            document.getElementById('videoContainer').style.display = 'block';
+
+            var art = new Artplayer({
+                container: '#videoContainer',
+                url: '{{ file_url }}',
+                title: '{{ file_name }}',
+                volume: 0.7,
+                isLive: false,
+                muted: false,
+                autoplay: false,
+                pip: true,
+                autoSize: true,
+                screenshot: true,
+                setting: true,
+                loop: false,
+                flip: true,
+                playbackRate: true,
+                aspectRatio: true,
+                fullscreen: true,
+                fullscreenWeb: true,
+                subtitleOffset: true,
+                miniProgressBar: true,
+                mutex: true,
+                backdrop: true,
+                playsInline: true,
+                autoPlayback: true,
+                airplay: true,
+                theme: '#00ff88',
+                lang: 'en',
+                moreVideoAttr: {
+                    crossOrigin: 'anonymous',
+                },
+                settings: [
+                    {
+                        width: 200,
+                        html: 'Watermark',
+                        tooltip: 'ON',
+                        switch: true,
+                        onSwitch: function (item) {
+                            item.tooltip = item.switch ? 'OFF' : 'ON';
+                            document.querySelector('.watermark').style.display = item.switch ? 'none' : 'block';
+                            return !item.switch;
+                        },
+                    },
+                ],
+                controls: [
+                    {
+                        position: 'right',
+                        html: '10s',
+                        index: 1,
+                        style: { marginRight: '10px' },
+                        click: function () { art.forward = 10; },
+                    },
+                    {
+                        position: 'right',
+                        html: '-10s',
+                        index: 1,
+                        style: { marginRight: '10px' },
+                        click: function () { art.backward = 10; },
+                    },
+                ],
+                layers: [
+                    {
+                        html: '<div class="watermark">@AV_BOTz_UPDATE</div>',
+                    },
+                ],
+            });
+
+            // Mobile Gestures: Brightness, Volume, and Seeking
+            art.on('ready', () => {
+                const video = art.video;
+                // Double tap to seek
+                art.on('video:click', () => {
+                    art.toggle();
+                });
+            });
+        }
+
+        // Theme and Eye Care Logic
+        function toggleDarkMode() {
+            document.body.classList.toggle('light-mode');
+        }
+
+        function toggleEyeCare() {
+            const overlay = document.getElementById('eyeCareOverlay');
+            overlay.style.display = (overlay.style.display === 'block') ? 'none' : 'block';
+        }
+
+        // External Player Intent
+        function play_intent(pkg) {
+            const videoUrl = "{{ file_url }}";
+            window.location.href = `intent:${videoUrl}#Intent;package=${pkg};type=video/*;end`;
+        }
+    </script>
     <script src="https://av-botz.vercel.app/2626/script.js"></script>
 </body>
 </html>

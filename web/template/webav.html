@@ -67,7 +67,17 @@
             overflow: hidden; 
         }
 
-        /* SUPER BOLD WATERMARK */
+        /* আইকন অ্যানিমেশন */
+        @keyframes bounce-icon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        @keyframes pulse-icon { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+        @keyframes wiggle-icon { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+        @keyframes beat-icon { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.25); } 30% { transform: scale(1); } 45% { transform: scale(1.25); } 60% { transform: scale(1); } }
+
+        .anim-bounce { animation: bounce-icon 2s infinite ease-in-out; }
+        .anim-pulse { animation: pulse-icon 1.5s infinite ease-in-out; }
+        .anim-wiggle { animation: wiggle-icon 2s infinite linear; }
+        .anim-beat { animation: beat-icon 2.5s infinite ease-in-out; }
+
         .bold-watermark {
             font-weight: 900 !important;
             font-size: 16px !important;
@@ -151,6 +161,52 @@
             </div>
         </div>
 
+        <!-- EXTERNAL PLAYERS WITH ICONS -->
+        <div class="glass-card">
+            <div class="small fw-bold mb-2 opacity-75 text-center">EXTERNAL PLAYERS</div>
+            <div class="row g-2">
+                <div class="col-4">
+                    <div onclick="play_intent('com.mxtech.videoplayer.ad')" class="btn-glass small px-1">
+                        <i class="fas fa-play text-blue-400 anim-pulse"></i> MX Player
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div onclick="play_intent('org.videolan.vlc')" class="btn-glass small px-1">
+                        <i class="fas fa-video text-orange-500 anim-beat"></i> VLC Player
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div onclick="play_intent('com.playit.videoplayer')" class="btn-glass small px-1">
+                        <i class="fas fa-play-circle text-green-400 anim-pulse"></i> PlayIt
+                    </div>
+                </div>
+            </div>
+            <div class="row g-2 mt-1">
+                <div class="col-4">
+                    <div onclick="play_system()" class="btn-glass small px-1">
+                        <i class="fas fa-desktop text-yellow-400 anim-beat"></i> System
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div onclick="play_intent('com.kmplayer')" class="btn-glass small px-1">
+                        <i class="fas fa-film text-purple-400 anim-bounce"></i> KM Player
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div onclick="play_intent('org.xbmc.kodi')" class="btn-glass small px-1">
+                        <i class="fas fa-border-all text-blue-300 anim-pulse"></i> Kodi
+                    </div>
+                </div>
+            </div>
+            <div class="row g-2 mt-1">
+                <div class="col-12">
+                    <div onclick="play_nplayer()" class="btn-glass small px-1">
+                        <i class="fas fa-mobile-screen text-cyan-400 anim-wiggle"></i> nPlayer (PRO/iOS)
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="glass-card">
             <div class="small fw-bold mb-2 opacity-75 text-center">SHARE LINKS</div>
             <div class="row g-2">
@@ -168,12 +224,6 @@
                 <a href="https://t.me/AV_SUPPORT_GROUP" target="_blank" class="tg-btn"><i class="fa-solid fa-headset"></i> Support</a>
                 <a href="https://t.me/AV_BOTZ_BACKUP" target="_blank" class="tg-btn"><i class="fa-solid fa-database"></i> Backup</a>
             </div>
-        </div>
-
-        <div class="row g-2 mb-4">
-            <div class="col-4"><div onclick="play_intent('com.mxtech.videoplayer.ad')" class="btn-glass small">MX Player</div></div>
-            <div class="col-4"><div onclick="play_intent('org.videolan.vlc')" class="btn-glass small">VLC Player</div></div>
-            <div class="col-4"><div onclick="play_intent('com.playit.videoplayer')" class="btn-glass small">PlayIt</div></div>
         </div>
 
         <footer class="text-center opacity-50 small py-2">@AV_BOTz_UPDATE &copy; 2025</footer>
@@ -228,15 +278,9 @@
                         html: '<i class="fa-solid fa-arrows-rotate"></i>',
                         tooltip: 'Fullscreen Rotation',
                         click: function () {
-                            // আপনার ছবির মতো ফুল ল্যান্ডস্কেপ করার লজিক
-                            if (!art.fullscreen) { 
-                                art.fullscreen = true; 
-                            }
-                            
-                            // ব্রাউজারের অরিয়েন্টেশন লক করার চেষ্টা (যাতে সার্চ বার চলে যায়)
+                            if (!art.fullscreen) { art.fullscreen = true; }
                             if (screen.orientation && screen.orientation.lock) {
                                 screen.orientation.lock('landscape').catch(function(error) {
-                                    // যদি ব্রাউজার লক সাপোর্ট না করে তবে সিএসএস রোটেশন ব্যবহার করবে
                                     art.rotate = (art.rotate === 0) ? 90 : 0;
                                 });
                             } else {
@@ -249,7 +293,6 @@
                 ]
             });
 
-            // সাউন্ড ৪০০% বুস্টার লজিক
             art.on('play', () => {
                 if (!window.audioBoosted) {
                     try {
@@ -257,7 +300,7 @@
                         const ctx = new AudioCtx();
                         const source = ctx.createMediaElementSource(art.video);
                         const gainNode = ctx.createGain();
-                        gainNode.gain.value = 4; // 400%
+                        gainNode.gain.value = 4;
                         source.connect(gainNode);
                         gainNode.connect(ctx.destination);
                         window.audioBoosted = true;
@@ -294,9 +337,23 @@
             const overlay = document.getElementById('eyeCareOverlay');
             overlay.style.display = (overlay.style.display === 'block') ? 'none' : 'block';
         }
+
+        // PLAYER FUNCTIONS
         function play_intent(pkg) { 
             let secureUrl = '{{ file_url }}'.replace("http://", "https://");
             window.location.href = `intent:${secureUrl}#Intent;package=${pkg};type=video/*;end`; 
+        }
+        function play_system() {
+            let secureUrl = '{{ file_url }}'.replace("http://", "https://");
+            window.location.href = `intent:${secureUrl}#Intent;action=android.intent.action.VIEW;type=video/*;end`;
+        }
+        function play_nplayer() {
+            let secureUrl = '{{ file_url }}'.replace("http://", "https://");
+            if (/Android/i.test(navigator.userAgent)) {
+                window.location.href = `intent:${secureUrl}#Intent;action=android.intent.action.VIEW;type=video/*;package=com.newin.nplayer.pro;end`;
+            } else {
+                window.location.href = `nplayer-${secureUrl}`;
+            }
         }
     </script>
 </body>

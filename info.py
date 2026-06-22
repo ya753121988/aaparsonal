@@ -1,5 +1,8 @@
 import re
 import os
+import time
+import threading
+import urllib.request
 from os import environ, getenv
 from Script import script
 
@@ -86,6 +89,13 @@ RATE_LIMIT_TIMEOUT = int(environ.get("RATE_LIMIT_TIMEOUT", "600"))
 MAX_FILES = int(environ.get("MAX_FILES", "50"))
 BATCH_LIMIT = int(environ.get('BATCH_LIMIT', 60))
 
+# 🗑️ AUTO DELETE SETTINGS
+AUTO_DELETE = is_enabled(environ.get("AUTO_DELETE", "True"), True)
+AUTO_DELETE_TIME = int(environ.get("AUTO_DELETE_TIME", "30")) # ইন সেকেন্ড
+
+# 🔄 KEEP ALIVE / UPTIME SETTINGS
+AUTO_KEEP_ALIVE = is_enabled(environ.get("AUTO_KEEP_ALIVE", "True"), True)
+
 # =========================================================
 # 🖼️ MEDIA & CAPTIONS
 # =========================================================
@@ -118,7 +128,6 @@ HAS_SSL = is_enabled(getenv("HAS_SSL", "False"), False)
 BIND_ADDRESS = getenv("WEB_SERVER_BIND_ADDRESS", "127.0.0.1")
 
 # URL Generation
-# Use provided URL from env, or generate based on FQDN/IP
 custom_url = environ.get("URL")
 if custom_url:
     URL = custom_url
@@ -128,7 +137,25 @@ else:
     PORT_SEGMENT = "" if NO_PORT else f":{PORT}"
     URL = f"{PROTOCOL}://{FQDN}{PORT_SEGMENT}/"
 
-# Default fallback if nothing works (Matches your provided koyeb link)
-if not URL or URL == "/":
+# Default fallback if nothing works
+if not URL or URL == "/" or URL.startswith("https://127.0.0.1"):
     URL = "https://forward-jolyn-vnnmbs-62200c9e.koyeb.app/"
-    
+
+# =========================================================
+# 🚀 AUTO UPTIME / KEEP-ALIVE LOGIC
+# =========================================================
+def ping_server():
+    while True:
+        try:
+            # URL থেকে সেলফ কল করবে
+            urllib.request.urlopen(URL)
+            print(f"Ping successful to: {URL}")
+        except Exception as e:
+            print(f"Ping failed: {e}")
+        
+        # ২০ মিনিট পরপর পিং করবে (1200 সেকেন্ড)
+        time.sleep(PING_INTERVAL)
+
+if AUTO_KEEP_ALIVE:
+    # ব্যাকগ্রাউন্ডে থ্রেড চালু করা হচ্ছে যাতে মেইন বোট স্লো না হয়
+    threading.Thread(target=ping_server, daemon=True).start()

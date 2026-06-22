@@ -2,19 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <!-- এই নিচের লাইনটি HTTP লিংকগুলোকে অটোমেটিক HTTPS এ কনভার্ট করার চেষ্টা করবে যা ত্রিভুজ চিহ্ন সরাতে সাহায্য করবে -->
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     
     <title>AV BOTZ | {{ file_name }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <link rel="icon" href="https://img.sanishtech.com/u/62e636411ff87f8ccbdd9eb50eb18279.png" type="image/x-icon">
     
-    <!-- CSS & Icon Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     
-    <!-- Video Player Library -->
     <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
 
     <style>
@@ -34,6 +31,15 @@
             overflow-x: hidden;
         }
 
+        /* Embed Mode Logic */
+        body.is-embed .notice-bar, 
+        body.is-embed .navbar, 
+        body.is-embed .glass-card, 
+        body.is-embed .row, 
+        body.is-embed footer { display: none !important; }
+        body.is-embed #player-section { margin: 0; padding: 0; position: fixed; top:0; left:0; width:100%; height:100%; z-index: 9999; }
+        body.is-embed .artplayer-app { height: 100vh !important; border-radius: 0; aspect-ratio: unset; }
+
         body.light-mode { background: #f0f2f5; color: #1a1a1a; }
         body.light-mode .navbar { background: #fff; border-bottom: 1px solid #ddd; }
         body.light-mode .glass-card { background: #fff !important; border: 1px solid #ddd !important; color: #1a1a1a !important; }
@@ -41,9 +47,7 @@
         body.light-mode .control-btn { background: #eee; color: #000; }
 
         .notice-bar { background: linear-gradient(90deg, #00ff88, #00b09b); color: #000; padding: 10px; font-weight: 800; text-align: center; font-size: 13px; z-index: 1001; position: relative; }
-
         .navbar { padding: 15px 20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; }
-
         .main-container { max-width: 600px; margin: 0 auto; padding: 0px 15px 20px 15px; }
 
         #player-section {
@@ -92,8 +96,10 @@
         .control-btn { border: none; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); color: #fff; display: flex; align-items: center; justify-content: center; }
 
         #popunder-trigger { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1200; display: none; }
-        
         #eyeCareOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 165, 0, 0.12); pointer-events: none; z-index: 9999; display: none; }
+        
+        /* Embed Input Style */
+        .embed-box { background: #000; border: 1px solid #333; color: var(--accent); font-family: monospace; font-size: 11px; padding: 10px; border-radius: 5px; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -129,7 +135,6 @@
             <div class="small opacity-50 mt-1">Size: {{ file_size }}</div>
         </div>
 
-        <!-- ডাউনলোডের নতুন সিস্টেম: এটি ব্লক হওয়ার সম্ভাবনা অনেক কম -->
         <div class="glass-card">
             <div onclick="forceDownload('{{ file_url }}')" class="btn-glass btn-main py-3">
                 <i class="fa-solid fa-bolt"></i> HIGH SPEED DOWNLOAD
@@ -148,6 +153,14 @@
             </div>
         </div>
 
+        <!-- EMBED CODE SECTION -->
+        <div class="glass-card">
+            <div class="small fw-bold mb-1"><i class="fa-solid fa-code text-success"></i> Embed This Player</div>
+            <div class="small opacity-50 mb-2">Copy this code to use the player on your site:</div>
+            <textarea class="embed-box" readonly id="embedCode"></textarea>
+            <button class="btn btn-sm btn-outline-success mt-2 w-100" onclick="copyEmbed()">Copy Embed Code</button>
+        </div>
+
         <div class="glass-card">
             <div class="small fw-bold mb-2 opacity-75 text-center">SHARE LINKS</div>
             <div class="row g-2">
@@ -160,7 +173,7 @@
         <div class="glass-card">
             <div class="fw-bold mb-2"><i class="fa-brands fa-telegram text-info"></i> Join Our Channels</div>
             <div class="tg-grid">
-                <a href="https://t.me/AV_BOT_UPDATE" target="_blank" class="tg-btn"><i class="fa-solid fa-bullhorn"></i> Main Update</a>
+                <a href="https://t.me/AV_BOTz_UPDATE" target="_blank" class="tg-btn"><i class="fa-solid fa-bullhorn"></i> Main Update</a>
                 <a href="https://t.me/AV_MOVIES_UPDATE" target="_blank" class="tg-btn"><i class="fa-solid fa-film"></i> Movie Box</a>
                 <a href="https://t.me/AV_SUPPORT_GROUP" target="_blank" class="tg-btn"><i class="fa-solid fa-headset"></i> Support</a>
                 <a href="https://t.me/AV_BOTZ_BACKUP" target="_blank" class="tg-btn"><i class="fa-solid fa-database"></i> Backup</a>
@@ -177,24 +190,34 @@
     </div>
 
     <script>
-        // ফোর্স ডাউনলোড ফাংশন - যা ব্রাউজারের সিকিউরিটি ব্লক বাইপাস করতে সাহায্য করবে
+        // Embed Code Generation
+        const currentUrl = window.location.href.split('?')[0];
+        document.getElementById('embedCode').value = `<iframe src="${currentUrl}?embed=true" width="100%" height="315" frameborder="0" allowfullscreen></iframe>`;
+        
+        function copyEmbed() {
+            const box = document.getElementById('embedCode');
+            box.select();
+            document.execCommand('copy');
+            alert("Embed Code Copied!");
+        }
+
+        // Check for Embed Mode
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('embed') === 'true') {
+            document.body.classList.add('is-embed');
+            window.onload = initPlayer; // অটোমেটিক প্লেয়ার লোড হবে এমবেড মোডে
+        }
+
         function forceDownload(url) {
-            // যদি ইউআরএল এ http থাকে তবে সেটাকে https করার চেষ্টা করা
             let secureUrl = url.replace("http://", "https://");
-            
             const link = document.createElement('a');
             link.href = secureUrl;
             link.setAttribute('download', '');
-            link.setAttribute('target', '_blank'); // নতুন ট্যাবে ট্রাই করবে যদি মেইন পেজ ব্লক করে
+            link.setAttribute('target', '_blank');
             link.setAttribute('rel', 'noopener noreferrer');
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
-            // একটি এলার্ট দেওয়া যাতে ইউজার বুঝতে পারে ডাউনলোড শুরু হয়েছে
-            setTimeout(() => {
-                alert("Download Starting... If not, please check your browser's download manager.");
-            }, 500);
         }
 
         async function shareAPI(title, link) {
@@ -227,15 +250,25 @@
                 title: '{{ file_name }}',
                 autoSize: true, playbackRate: true, aspectRatio: true,
                 setting: true, fullscreen: true, pip: true, theme: '#00ff88',
+                preload: 'auto', // স্পিড বাড়ানোর জন্য প্রি-লোড অটো
                 moreVideoAttr: { crossOrigin: 'anonymous', playsInline: true },
                 layers: [{ html: '<div style="position:absolute;top:10px;right:10px;font-size:12px;opacity:0.5;">@AV_BOTz_UPDATE</div>' }],
                 controls: [
                     {
                         position: 'right',
                         html: '<i class="fa-solid fa-arrows-rotate"></i>',
-                        tooltip: 'Rotate Video',
+                        tooltip: 'Rotate & Landscape',
                         click: function () {
-                            art.rotate += 90;
+                            // সলিড রোটেশন লজিক যা ২য় স্ক্রিনশটের মতো কাজ করবে
+                            if (!art.isRotate) {
+                                art.video.style.transform = 'rotate(90deg) scale(1.5)';
+                                art.isRotate = true;
+                                art.notice.show = 'Landscape Mode Active';
+                            } else {
+                                art.video.style.transform = 'rotate(0deg) scale(1)';
+                                art.isRotate = false;
+                                art.notice.show = 'Portrait Mode Active';
+                            }
                         },
                     },
                     { position: 'right', html: '<i class="fa-solid fa-rotate-left"></i>', click: () => art.backward = 10 },
@@ -243,30 +276,27 @@
                 ]
             });
 
-            // সাউন্ড ৪০০% করার জন্য অডিও বুস্টার (Web Audio API)
+            // সাউন্ড বুস্টার ৪০০% - Web Audio API
             art.on('play', () => {
-                if (!art.audioCtx) {
+                try {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    art.audioCtx = new AudioContext();
-                    const source = art.audioCtx.createMediaElementSource(art.video);
-                    const gainNode = art.audioCtx.createGain();
-                    gainNode.gain.value = 4; // ৪ গুণ সাউন্ড বুস্ট (400%)
-                    source.connect(gainNode);
-                    gainNode.connect(art.audioCtx.destination);
-                }
+                    if (!art.audioCtx) {
+                        art.audioCtx = new AudioContext();
+                        const source = art.audioCtx.createMediaElementSource(art.video);
+                        const gainNode = art.audioCtx.createGain();
+                        gainNode.gain.value = 4; // ৪০০% বুস্ট
+                        source.connect(gainNode);
+                        gainNode.connect(art.audioCtx.destination);
+                        art.notice.show = 'Sound Boosted to 400%';
+                    } else if (art.audioCtx.state === 'suspended') {
+                        art.audioCtx.resume();
+                    }
+                } catch (e) { console.error("Audio Boost Failed", e); }
             });
 
-            let startY = 0, startX = 0;
+            let startY = 0;
             const container = document.querySelector('#artplayer');
-            container.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 1) e.preventDefault(); 
-            }, { passive: false });
-
-            container.addEventListener('touchstart', (e) => { 
-                startY = e.touches[0].clientY; 
-                startX = e.touches[0].clientX;
-            });
-
+            container.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; });
             container.addEventListener('touchmove', (e) => {
                 const deltaY = startY - e.touches[0].clientY;
                 const rect = container.getBoundingClientRect();
@@ -275,11 +305,9 @@
                     const b = parseFloat(art.video.style.filter.replace('brightness(', '').replace(')', '')) || 1;
                     const next = Math.min(Math.max(b + (deltaY / 600), 0.3), 2);
                     art.video.style.filter = `brightness(${next})`;
-                    art.notice.show = `Brightness: ${Math.round(next * 100)}%`;
                 } else { 
                     const v = Math.min(Math.max(art.volume + (deltaY / 600), 0), 1);
                     art.volume = v;
-                    art.notice.show = `Volume: ${Math.round(v * 100)}%`;
                 }
                 startY = e.touches[0].clientY;
             });
@@ -290,8 +318,8 @@
                 if (now - lastClick < 300) {
                     const rect = art.video.getBoundingClientRect();
                     const x = e.clientX - rect.left;
-                    if (x < rect.width / 3) { art.backward = 10; art.notice.show = 'Rewind 10s'; }
-                    else if (x > (rect.width / 3) * 2) { art.forward = 10; art.notice.show = 'Forward 10s'; }
+                    if (x < rect.width / 3) { art.backward = 10; }
+                    else if (x > (rect.width / 3) * 2) { art.forward = 10; }
                     else { art.toggle(); }
                 }
                 lastClick = now;

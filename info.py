@@ -124,7 +124,7 @@ if custom_url:
     URL = custom_url
 else:
     FQDN = getenv("FQDN", BIND_ADDRESS)
-    PROTOCOL = "https" if HAS_SSL else "http"
+    PROTOCOL = "http" if HAS_SSL else "https"
     PORT_SEGMENT = "" if NO_PORT else f":{PORT}"
     URL = f"{PROTOCOL}://{FQDN}{PORT_SEGMENT}/"
 

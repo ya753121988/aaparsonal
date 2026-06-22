@@ -9,24 +9,39 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
     <link rel="stylesheet" href="https://av-botz.vercel.app/2626/style.css">
 </head>
 
 <body>
 
+    <canvas id="particle-canvas"></canvas>
+
     <nav class="navbar anim-entry">
-        <div class="container d-flex justify-content-center">
+        <div class="container d-flex justify-content-between align-items-center position-relative">
             <a href="#" class="navbar-brand text-decoration-none">
                 <i class="fa-solid fa-robot me-2" style="color: var(--accent-color);"></i> AV BOTZ
             </a>
+            
+            <button id="menuToggle" class="menu-btn">
+                <i class="fa-solid fa-bars"></i> Menu
+            </button>
+
+            <div id="drawer" class="nav-drawer">
+                <a href="https://streming-template-eight.vercel.app/Disclaimer.html" class="menu-item drawer-link"><i class="fa-solid fa-triangle-exclamation"></i> Disclaimer</a>
+                <a href="https://streming-template-eight.vercel.app/Contact.html" class="menu-item drawer-link"><i class="fa-solid fa-envelope"></i> Contact Us</a>
+                <a href="https://streming-template-eight.vercel.app/About.html" class="menu-item drawer-link"><i class="fa-solid fa-circle-info"></i> About Us</a>
+                <a href="https://streming-template-eight.vercel.app/DMCA.html" class="menu-item drawer-link"><i class="fa-solid fa-bookmark"></i> DMCA</a>
+            </div>
         </div>
     </nav>
 
     <main class="container py-4">
 
-        <!-- Watch Stream / Player Section -->
         <div class="player-wrapper mb-4 anim-entry delay-1" id="videoContainer">
             <video id="myVideo" playsinline controls class="w-100 h-100">
                 <source src="{{ file_url }}" type="video/mp4" />
@@ -35,19 +50,20 @@
             </video>
         </div>
 
-        <!-- File Details -->
-        <div class="glass-card anim-entry delay-2 mb-4">
+        <div class="glass-card anim-entry delay-2">
+            <div class="mb-3" style="color: var(--accent-color); font-weight: 700;">
+                <i class="fa-solid fa-circle-info me-2"></i> File Details
+            </div>
             <div class="info-row">
-                <span style="color: #ccc;">Filename:</span>
+                <span style="color: #ccc;">Filename</span>
                 <span class="info-value">{{ file_name }}</span>
             </div>
             <div class="info-row">
-                <span style="color: #ccc;">Size:</span>
+                <span style="color: #ccc;">Size</span>
                 <span class="info-value">{{ file_size }}</span>
             </div>
         </div>
 
-        <!-- External Players Section -->
         <div class="row g-2 mb-3 anim-entry delay-3">
             <div class="col-6">
                 <a onclick="play_intent('com.mxtech.videoplayer.ad')" class="btn-glass">
@@ -64,15 +80,15 @@
                     <i class="fa-solid fa-circle-play"></i> PlayIt Player
                 </a>
             </div>
+            
+            <div class="col-12">
+                <button onclick="shareLink()" class="btn-glass btn-share">
+                    <i class="fa-solid fa-share-nodes"></i> Share with Friends
+                </button>
+            </div>
         </div>
 
-        <!-- Download Buttons Section -->
         <div class="row g-2 anim-entry delay-3">
-            <div class="col-12">
-                <a href="{{ file_url }}" class="btn-glass" style="background: rgba(40, 167, 69, 0.2); border: 1px solid #28a745;">
-                    <i class="fa-solid fa-bolt"></i> Fast Download
-                </a>
-            </div>
             <div class="col-6">
                 <a href="{{ file_url }}" class="btn-glass">
                     <i class="fa-solid fa-cloud-arrow-down"></i> Download
@@ -80,19 +96,66 @@
             </div>
             <div class="col-6">
                 <a href="{{ file_get }}" target="_blank" class="btn-glass btn-telegram">
-                    <i class="fa-brands fa-telegram"></i> Get File
+                    <i class="fa-brands fa-telegram"></i> Telegram
+                </a>
+            </div>
+            <div class="col-12">
+                <a href="tg://resolve?domain=AV_SUPPORT_GROUP" class="btn-glass btn-report">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Report Error / Disclaimer
                 </a>
             </div>
         </div>
 
+        <div class="glass-card anim-entry delay-3 mt-4 text-center">
+            <h5 style="color: var(--accent-color); font-weight: 800;">📣 Stay Connected with AV BOTZ</h5>
+            <p class="small text-white-50 mt-2">
+                Join our official Telegram channel to get:<br>
+                🔑 Latest password updates • 🎁 Bonus files & rewards<br>
+                🚀 Early access to new features
+            </p>
+            <a href="tg://resolve?domain=AV_BOTz_UPDATE" class="btn-glass btn-telegram mt-2">
+                <i class="fa-brands fa-telegram"></i> 🚀 Open in Telegram
+            </a>
+        </div>
+
     </main>
 
-    <footer class="text-center py-4">
+    <footer>
+        <div class="mb-2">
+            <i class="fa-solid fa-moon me-1"></i> 🌗 Smart Theme Enabled<br>
+            <span style="font-size: 10px; opacity: 0.6;">This page automatically adjusts its theme based on your device time.</span>
+        </div>
         <p class="mb-0">🔹 Official content by AV BOTZ <br> @AV_BOTz_UPDATE &copy; 2025</p>
+        <p class="text-danger mt-2" style="font-size: 0.7rem;">⚠️ Sharing or re-uploading this content without credit is strictly prohibited.</p>
     </footer>
 
+    <a href="https://t.me/AV_OWNER_BOT" target="_blank" class="floating-btn">
+         <i class="fa-solid fa-comments"></i> 💬 Need Help?
+    </a>
+
+    <div id="supportPopup" class="popup-overlay">
+        <div class="popup-content">
+            <span class="close-btn" onclick="toggleSupport()">×</span>
+            <h4 class="mb-3">🤝 Need Assistance?</h4>
+            <p class="text-white-50">Having trouble with playback, download, or access issues? Our support team is available on Telegram.</p>
+            <a href="tg://resolve?domain=AV_BOTz_UPDATE" class="btn-glass btn-telegram">
+                👉 Chat on Telegram
+            </a>
+            <div class="mt-3 small text-muted">Fast replies • Trusted support • 24/7 updates</div>
+        </div>
+    </div>
+
+    <div id="securityModal" class="popup-overlay">
+        <div class="popup-content border-danger">
+            <div class="text-danger display-4 mb-2"><i class="fa-solid fa-shield-halved"></i></div>
+            <h4 class="text-danger">🚫 Restricted Action Detected</h4>
+            <p>Developer tools are disabled on this page to protect content integrity.</p>
+            <p class="small text-white-50">⚠️ Any suspicious activity may lead to temporary access restriction.</p>
+            <button class="btn-glass" onclick="closeSecurity()">✅ I Understand</button>
+        </div>
+    </div>
+
     <script>
-        // Watermark and Video Config
         window.siteConfig = {
             thumbnailUrl: "https://img.sanishtech.com/u/29b202409346d1bc163738eb0cab22fa.png",
             watermarkText: "@AV_BOTz_UPDATE",

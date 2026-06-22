@@ -37,6 +37,7 @@
         body.light-mode .glass-card { background: #fff !important; border: 1px solid #ddd !important; color: #1a1a1a !important; }
         body.light-mode .btn-glass { background: #fff !important; border: 1px solid #ccc !important; color: #000 !important; }
         body.light-mode .control-btn { background: #eee; color: #000; }
+        body.light-mode #player-section { background: #f0f2f5; }
 
         /* Notice Bar */
         .notice-bar { background: linear-gradient(90deg, #00ff88, #00b09b); color: #000; padding: 10px; font-weight: 800; text-align: center; font-size: 13px; z-index: 1001; }
@@ -44,16 +45,18 @@
         /* Navbar */
         .navbar { padding: 15px 20px; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; }
 
-        .main-container { max-width: 600px; margin: 0 auto; padding: 20px 15px; }
+        .main-container { max-width: 600px; margin: 0 auto; padding: 0px 15px 20px 15px; }
 
-        /* Adaptive Player Section */
+        /* Adaptive Player Section - LOCKED POSITION */
         #player-section {
-            width: 100%; border-radius: 15px; overflow: hidden; background: #000;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6); margin-bottom: 20px;
-            position: relative; min-height: 250px;
+            width: 100%; border-radius: 0 0 15px 15px; overflow: hidden; background: var(--bg-dark);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;
+            position: sticky; top: 60px; /* Navbar এর নিচে লক হয়ে থাকবে */
+            z-index: 999;
+            padding-top: 10px;
         }
         .artplayer-app { width: 100%; height: auto; aspect-ratio: 16/9; }
-        .artplayer-app[data-portrait="true"] { aspect-ratio: 9/16; max-height: 80vh; }
+        .artplayer-app[data-portrait="true"] { aspect-ratio: 9/16; max-height: 70vh; }
 
         #watchBtn {
             width: 100%; padding: 60px 20px; border: 2px dashed var(--accent);
@@ -99,7 +102,7 @@
 
     <div class="main-container">
         
-        <!-- Adaptive Player Area -->
+        <!-- Adaptive Player Area (LOCKED AT TOP) -->
         <div id="player-section">
             <div id="watchBtn" onclick="initPlayer()">
                 <i class="fa-solid fa-circle-play fa-4x text-success mb-3"></i>
@@ -109,49 +112,52 @@
             <div id="artplayer" class="artplayer-app" style="display:none;"></div>
         </div>
 
-        <!-- File Details Card -->
-        <div class="glass-card text-center">
-            <div class="fw-bold text-truncate">{{ file_name }}</div>
-            <div class="small opacity-50 mt-1">Size: {{ file_size }}</div>
-        </div>
-
-        <!-- Downloads & Get File Button -->
-        <div class="glass-card">
-            <div onclick="smartDownload('{{ file_url }}')" class="btn-glass btn-main py-3">
-                <i class="fa-solid fa-bolt"></i> HIGH SPEED DOWNLOAD
+        <!-- Scrollable Content Starts Here -->
+        <div class="content-scroll">
+            <!-- File Details Card -->
+            <div class="glass-card text-center">
+                <div class="fw-bold text-truncate">{{ file_name }}</div>
+                <div class="small opacity-50 mt-1">Size: {{ file_size }}</div>
             </div>
-            <div class="row g-2 mt-1">
-                <div class="col-6"><div onclick="smartDownload('{{ file_url }}')" class="btn-glass"><i class="fa-solid fa-download"></i> DOWNLOAD</div></div>
-                <div class="col-6"><a href="{{ file_get }}" target="_blank" class="btn-glass btn-tg"><i class="fa-brands fa-telegram"></i> GET FILE</a></div>
-            </div>
-        </div>
 
-        <!-- 3 Share Options Section -->
-        <div class="glass-card">
-            <div class="small fw-bold mb-2 opacity-75 text-center">SHARE LINKS</div>
-            <div class="row g-2">
-                <div class="col-4"><div onclick="shareAPI('Video Link', window.location.href)" class="btn-glass small px-1"><i class="fa-solid fa-share-nodes"></i> Video</div></div>
-                <div class="col-4"><div onclick="shareAPI('Download Link', '{{ file_url }}')" class="btn-glass small px-1"><i class="fa-solid fa-link"></i> File</div></div>
-                <div class="col-4"><div onclick="shareAPI('TG Get File Link', '{{ file_get }}')" class="btn-glass small px-1"><i class="fa-brands fa-telegram"></i> TG Get</div></div>
+            <!-- Downloads & Get File Button -->
+            <div class="glass-card">
+                <div onclick="smartDownload('{{ file_url }}')" class="btn-glass btn-main py-3">
+                    <i class="fa-solid fa-bolt"></i> HIGH SPEED DOWNLOAD
+                </div>
+                <div class="row g-2 mt-1">
+                    <div class="col-6"><div onclick="smartDownload('{{ file_url }}')" class="btn-glass"><i class="fa-solid fa-download"></i> DOWNLOAD</div></div>
+                    <div class="col-6"><a href="{{ file_get }}" target="_blank" class="btn-glass btn-tg"><i class="fa-brands fa-telegram"></i> GET FILE</a></div>
+                </div>
             </div>
-        </div>
 
-        <!-- 4 Telegram Channels Section -->
-        <div class="glass-card">
-            <div class="fw-bold mb-2"><i class="fa-brands fa-telegram text-info"></i> Join Our Channels</div>
-            <div class="tg-grid">
-                <a href="https://t.me/AV_BOTz_UPDATE" target="_blank" class="tg-btn"><i class="fa-solid fa-bullhorn"></i> Main Update</a>
-                <a href="https://t.me/AV_MOVIES_UPDATE" target="_blank" class="tg-btn"><i class="fa-solid fa-film"></i> Movie Box</a>
-                <a href="https://t.me/AV_SUPPORT_GROUP" target="_blank" class="tg-btn"><i class="fa-solid fa-headset"></i> Support</a>
-                <a href="https://t.me/AV_BOTZ_BACKUP" target="_blank" class="tg-btn"><i class="fa-solid fa-database"></i> Backup</a>
+            <!-- 3 Share Options Section -->
+            <div class="glass-card">
+                <div class="small fw-bold mb-2 opacity-75 text-center">SHARE LINKS</div>
+                <div class="row g-2">
+                    <div class="col-4"><div onclick="shareAPI('Video Link', window.location.href)" class="btn-glass small px-1"><i class="fa-solid fa-share-nodes"></i> Video</div></div>
+                    <div class="col-4"><div onclick="shareAPI('Download Link', '{{ file_url }}')" class="btn-glass small px-1"><i class="fa-solid fa-link"></i> File</div></div>
+                    <div class="col-4"><div onclick="shareAPI('TG Get File Link', '{{ file_get }}')" class="btn-glass small px-1"><i class="fa-brands fa-telegram"></i> TG Get</div></div>
+                </div>
             </div>
-        </div>
 
-        <!-- External Players -->
-        <div class="row g-2 mb-4">
-            <div class="col-4"><div onclick="play_intent('com.mxtech.videoplayer.ad')" class="btn-glass small">MX Player</div></div>
-            <div class="col-4"><div onclick="play_intent('org.videolan.vlc')" class="btn-glass small">VLC Player</div></div>
-            <div class="col-4"><div onclick="play_intent('com.playit.videoplayer')" class="btn-glass small">PlayIt</div></div>
+            <!-- 4 Telegram Channels Section -->
+            <div class="glass-card">
+                <div class="fw-bold mb-2"><i class="fa-brands fa-telegram text-info"></i> Join Our Channels</div>
+                <div class="tg-grid">
+                    <a href="https://t.me/AV_BOTz_UPDATE" target="_blank" class="tg-btn"><i class="fa-solid fa-bullhorn"></i> Main Update</a>
+                    <a href="https://t.me/AV_MOVIES_UPDATE" target="_blank" class="tg-btn"><i class="fa-solid fa-film"></i> Movie Box</a>
+                    <a href="https://t.me/AV_SUPPORT_GROUP" target="_blank" class="tg-btn"><i class="fa-solid fa-headset"></i> Support</a>
+                    <a href="https://t.me/AV_BOTZ_BACKUP" target="_blank" class="tg-btn"><i class="fa-solid fa-database"></i> Backup</a>
+                </div>
+            </div>
+
+            <!-- External Players -->
+            <div class="row g-2 mb-4">
+                <div class="col-4"><div onclick="play_intent('com.mxtech.videoplayer.ad')" class="btn-glass small">MX Player</div></div>
+                <div class="col-4"><div onclick="play_intent('org.videolan.vlc')" class="btn-glass small">VLC Player</div></div>
+                <div class="col-4"><div onclick="play_intent('com.playit.videoplayer')" class="btn-glass small">PlayIt</div></div>
+            </div>
         </div>
 
         <footer class="text-center opacity-50 small py-2">@AV_BOTz_UPDATE &copy; 2025</footer>

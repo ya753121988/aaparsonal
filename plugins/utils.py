@@ -3,7 +3,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from pyrogram.enums import ParseMode
 from Script import script
 from utils import temp
-from info import AUTH_PICS, AUTH_CHANNEL, ENABLE_LIMIT, RATE_LIMIT_TIMEOUT, MAX_FILES
+from info import AUTH_PICS, AUTH_CHANNEL, ENABLE_LIMIT, RATE_LIMIT_TIMEOUT, MAX_FILES, AUTO_DELETE, AUTO_DELETE_TIME
 import asyncio, time
 
 rate_limit = {}
@@ -58,7 +58,7 @@ async def is_user_joined(bot, message: Message) -> bool:
     return True
     
 async def is_user_allowed(user_id):
-    """📌 यह फंक्शन चेक करेगा कि यूजर की फाइल लिमिट खत्म हुई है या नहीं"""
+    """📌 এটি ফাইল লিমিট চেক করবে"""
     current_time = time.time()
 
     if ENABLE_LIMIT:
@@ -76,12 +76,15 @@ async def is_user_allowed(user_id):
 
     return True, 0  # ✅ Allowed
 
-# --- নিচের এই ফাংশনটি আপনার ফাইলে ছিল না, তাই ডিলেট হচ্ছিল না ---
-
-async def auto_delete_message(message: Message, delay: int):
+async def auto_delete_message(message: Message, delay: int = None):
     """📌 এটি নির্দিষ্ট সময় পর ফাইল বা মেসেজ ডিলিট করবে"""
-    await asyncio.sleep(delay)
+    if not AUTO_DELETE:
+        return
+    wait_time = delay if delay is not None else AUTO_DELETE_TIME
+    await asyncio.sleep(wait_time)
     try:
         await message.delete()
+        if message.reply_to_message:
+            await message.reply_to_message.delete()
     except Exception as e:
         print(f"Error auto-deleting message: {e}")

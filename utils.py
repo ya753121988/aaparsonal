@@ -1,70 +1,64 @@
-import asyncio
+import math
 import time
-from pyrogram.errors import UserNotParticipant, ChatAdminRequired
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from pyrogram.enums import ParseMode
-from Script import script
-from info import AUTH_PICS, AUTH_CHANNEL, ENABLE_LIMIT, RATE_LIMIT_TIMEOUT, MAX_FILES, AUTO_DELETE, AUTO_DELETE_TIME
+import asyncio
+import urllib.request
+from pyrogram.types import Message
+from info import AUTO_DELETE, AUTO_DELETE_TIME, URL, PING_INTERVAL
 
-# Global Temp class to store bot names
-class Temp:
+class Temp(object):
     B_NAME = None
     U_NAME = None
+    ME = None
+    B_LINK = None
 
 temp = Temp()
-rate_limit = {}
 
-async def is_user_joined(bot, message: Message) -> bool:
-    user_id = message.from_user.id
-    bot_user = await bot.get_me()    
-    not_joined_channels = []
-    for channel_id in AUTH_CHANNEL:
-        try:
-            await bot.get_chat_member(channel_id, user_id)
-        except UserNotParticipant:
-            try:
-                chat = await bot.get_chat(channel_id)
-                invite_link = await bot.export_chat_invite_link(channel_id)
-                not_joined_channels.append((chat.title, invite_link))
-            except ChatAdminRequired:
-                return False
-            except: continue
-        except: continue
+def get_size(size):
+    if not size:
+        return "0 B"
+    size = int(size)
+    units = ["B", "KB", "MB", "GB", "TB"]
+    i = int(math.floor(math.log(size, 1024)))
+    return f"{round(size / math.pow(1024, i), 2)} {units[i]}"
 
-    if not_joined_channels:
-        buttons = [[InlineKeyboardButton(f"Join {title}", url=link)] for title, link in not_joined_channels]
-        buttons.append([InlineKeyboardButton("🔄 Try Again", url=f"https://t.me/{bot_user.username}?start=start")])
-        await message.reply_photo(
-            photo=AUTH_PICS,
-            caption=script.AUTH_TXT.format(message.from_user.mention),
-            reply_markup=InlineKeyboardMarkup(buttons)
-        )
-        return False
-    return True
-    
-async def is_user_allowed(user_id):
-    if not ENABLE_LIMIT: return True, 0
-    current_time = time.time()
-    if user_id in rate_limit:
-        file_count, last_time = rate_limit[user_id]
-        if file_count >= MAX_FILES and (current_time - last_time) < RATE_LIMIT_TIMEOUT:
-            return False, int(RATE_LIMIT_TIMEOUT - (current_time - last_time))
-        elif (current_time - last_time) >= RATE_LIMIT_TIMEOUT:
-            rate_limit[user_id] = [1, current_time]
-        else: rate_limit[user_id][0] += 1
-    else:
-        rate_limit[user_id] = [1, current_time]
-    return True, 0
+def get_readable_time(seconds: int) -> str:
+    count = 0
+    ping_time = ""
+    time_list = []
+    time_suffix_list = ["s", "m", "h", "days"]
+    while count < 4:
+        count += 1
+        if count < 3:
+            remainder, result = divmod(seconds, 60)
+        else:
+            remainder, result = divmod(seconds, 24)
+        if seconds == 0 and remainder == 0:
+            break
+        time_list.append(int(result))
+        seconds = int(remainder)
+    for i in range(len(time_list)):
+        time_list[i] = str(time_list[i]) + time_suffix_list[i]
+    if len(time_list) == 4:
+        ping_time += time_list.pop() + ", "
+    time_list.reverse()
+    ping_time += ":".join(time_list)
+    return ping_time
 
-async def auto_delete_message(message: Message, delay: int = None):
-    """📌 এটি নির্দিষ্ট সময় পর মেসেজ ডিলিট করবে"""
+async def auto_delete_message(message, delay=None):
     if not AUTO_DELETE:
         return
     wait_time = delay if delay is not None else AUTO_DELETE_TIME
     await asyncio.sleep(wait_time)
     try:
         await message.delete()
-        if message.reply_to_message:
-            await message.reply_to_message.delete()
     except:
         pass
+
+def ping_server():
+    while True:
+        try:
+            urllib.request.urlopen(URL)
+            print(f"Ping successful to: {URL}")
+        except Exception as e:
+            print(f"Ping failed: {e}")
+        time.sleep(PING_INTERVAL)

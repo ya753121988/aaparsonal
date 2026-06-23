@@ -6,7 +6,7 @@ from pyrogram.types import Message
 from info import AUTO_DELETE, AUTO_DELETE_TIME, URL, PING_INTERVAL
 
 # ===============================
-# TEMP DATA STORAGE
+# GLOBAL TEMP STORAGE
 # ===============================
 class Temp:
     ME = None
@@ -72,10 +72,10 @@ async def auto_delete_message(message: Message, delay: int = None):
         pass
 
 # ===============================
-# PING SERVER LOGIC
+# PING SERVER FUNCTION (মেইন ফিক্স)
 # ===============================
 def ping_server():
-    """বটকে সার্ভারে জীবিত রাখার জন্য পিং লজিক"""
+    """বটকে অ্যাক্টিভ রাখার জন্য সার্ভার পিং করার ফাংশন"""
     while True:
         try:
             urllib.request.urlopen(URL)

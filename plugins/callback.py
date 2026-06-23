@@ -12,13 +12,28 @@ from pyrogram import Client, filters, enums
 from pyrogram.errors import *
 from pyrogram.types import Message
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from info import ADMINS, URL, OWNER_USERNAME, SUPPORT, CHANNEL, BIN_CHANNEL, QR_CODE, FILE_CAPTION
+# info থেকে নতুন ভেরিয়েবলগুলো ইমপোর্ট করা হয়েছে
+from info import (
+    ADMINS, URL, OWNER_USERNAME, SUPPORT, CHANNEL, BIN_CHANNEL, 
+    QR_CODE, FILE_CAPTION, AUTO_DELETE, AUTO_DELETE_TIME
+)
 from datetime import datetime
 from web.utils.file_properties import get_hash
 from utils import temp, get_readable_time, get_size
 from web.utils import StartTime, __version__
 
 logger = logging.getLogger(__name__)
+
+# --- অটো ডিলিট হেল্পার ফাংশন ---
+async def auto_delete_message(message, delay=None):
+    if not AUTO_DELETE:
+        return
+    wait_time = delay if delay is not None else AUTO_DELETE_TIME
+    await asyncio.sleep(wait_time)
+    try:
+        await message.delete()
+    except Exception:
+        pass
 
 @Client.on_callback_query()
 async def cb_handler(client: Client, query: CallbackQuery):
@@ -77,7 +92,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
         )  
 
     elif query.data == "admincmd":
-        #if user isnt admin then return
         if not query.from_user.id in ADMINS:
             return await query.answer('This Feature Is Only For Admins !' , show_alert=True)
         buttons = [[
@@ -140,7 +154,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif query.data == "reffff":
         user_id = query.from_user.id
         points = await db.get_refer_points(user_id)
-        # FIXED: Added quotes and f-string formatting
         ref_link = f"https://t.me/{temp.U_NAME}?start=reff_{user_id}"
         share_link = f"https://telegram.me/share/url?url={ref_link}&text=Join%20Now%20For%20Movies!"
         buttons = [[
@@ -179,7 +192,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
         except Exception as e:
             await query.answer(f"Error: {e}", show_alert=True)
 
-    # ⏩ Pagination: Next/Back
     elif query.data.startswith("filespage_"):
         page = int(query.data.split("_")[1])
         user_id = query.from_user.id      
@@ -245,17 +257,27 @@ async def cb_handler(client: Client, query: CallbackQuery):
             media = original_message.document or original_message.video or original_message.audio
             caption = None
             if media:
-                # getattr is safer here as Video objects sometimes don't have file_name attribute directly in some pyrogram versions
                 file_name = getattr(media, "file_name", "Unnamed") 
                 file_size = get_size(media.file_size)
                 caption = FILE_CAPTION.format(CHANNEL, file_name)
-            await client.copy_message(
+            
+            # ফাইল পাঠানো হচ্ছে
+            sent_msg = await client.copy_message(
                 chat_id=user_id,
                 from_chat_id=BIN_CHANNEL,
                 message_id=file_id,
                 caption=caption
             )
-            return await query.answer()
+            
+            # ইউজারকে সতর্কবার্তা দেওয়া
+            if AUTO_DELETE:
+                await query.answer(f"✅ ফাইল পাঠানো হয়েছে! এটি {AUTO_DELETE_TIME} সেকেন্ড পর অটো ডিলিট হবে।", show_alert=True)
+                # ব্যাকগ্রাউন্ডে অটো ডিলিট ফাংশন রান করা হচ্ছে
+                asyncio.create_task(auto_delete_message(sent_msg, AUTO_DELETE_TIME))
+            else:
+                await query.answer("✅ ফাইল পাঠানো হয়েছে!", show_alert=True)
+            
+            return
         except Exception:
             return await query.answer("⚠️ Failed to send file.", show_alert=True)
         
@@ -273,5 +295,4 @@ async def cb_handler(client: Client, query: CallbackQuery):
         except:
             pass
         await query.answer("✅ Fɪʟᴇ ᴅᴇʟᴇᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱғᴜʟʟʏ!", show_alert=True)
-        await query.message.edit_text("🗑️ Fɪʟᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱғᴜʟʟʏ.")
-		
+        await query.message.edit_text("🗑️ Fɪʟᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ ꜱᴜᴄᴄᴇꜱғᴜʟʟʏ.")

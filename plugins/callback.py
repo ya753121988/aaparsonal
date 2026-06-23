@@ -12,11 +12,12 @@ from pyrogram import Client, filters, enums
 from pyrogram.errors import *
 from pyrogram.types import Message
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from info import ADMINS, URL, OWNER_USERNAME, SUPPORT, CHANNEL, BIN_CHANNEL, QR_CODE, FILE_CAPTION
+from info import ADMINS, URL, OWNER_USERNAME, SUPPORT, CHANNEL, BIN_CHANNEL, QR_CODE, FILE_CAPTION, AUTO_DELETE, AUTO_DELETE_TIME
 from datetime import datetime
 from web.utils.file_properties import get_hash
 from utils import temp, get_readable_time, get_size
 from web.utils import StartTime, __version__
+from plugins.utils import auto_delete_message
 
 logger = logging.getLogger(__name__)
 
@@ -245,16 +246,17 @@ async def cb_handler(client: Client, query: CallbackQuery):
             media = original_message.document or original_message.video or original_message.audio
             caption = None
             if media:
-                # getattr is safer here as Video objects sometimes don't have file_name attribute directly in some pyrogram versions
                 file_name = getattr(media, "file_name", "Unnamed") 
-                file_size = get_size(media.file_size)
                 caption = FILE_CAPTION.format(CHANNEL, file_name)
-            await client.copy_message(
+            sent_msg = await client.copy_message(
                 chat_id=user_id,
                 from_chat_id=BIN_CHANNEL,
                 message_id=file_id,
                 caption=caption
             )
+            # ফাইল ডিলিট করার টাস্ক অ্যাড করা হলো
+            if AUTO_DELETE:
+                asyncio.create_task(auto_delete_message(sent_msg, AUTO_DELETE_TIME))
             return await query.answer()
         except Exception:
             return await query.answer("⚠️ Failed to send file.", show_alert=True)
@@ -274,4 +276,3 @@ async def cb_handler(client: Client, query: CallbackQuery):
             pass
         await query.answer("✅ Fɪʟᴇ ᴅᴇʟᴇᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱғᴜʟʟʏ!", show_alert=True)
         await query.message.edit_text("🗑️ Fɪʟᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱғᴜʟʟʏ.")
-		

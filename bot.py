@@ -14,7 +14,7 @@ from pyrogram.raw.all import layer
 import pyrogram.utils
 from pyrogram.types import Message
 from info import *
-from utils import temp, ping_server # এটি এখন কাজ করবে
+from utils import temp, ping_server
 from Script import script
 from web import web_server, check_expired_premium
 from web.bot import WebavBot
@@ -96,10 +96,9 @@ async def Webav_start():
             except Exception:
                 logger.error("PLUGIN IMPORT FAILED", exc_info=True)
 
-        # 4. Server Ping Logic
-        if AUTO_KEEP_ALIVE:
-            import threading
-            threading.Thread(target=ping_server, daemon=True).start()
+        # 4. Heroku Ping
+        if ON_HEROKU:
+            asyncio.create_task(asyncio.to_thread(ping_server))
 
         # 5. Set Global Info
         me = await WebavBot.get_me()
@@ -117,7 +116,7 @@ async def Webav_start():
         tz = pytz.timezone("Asia/Kolkata")
         today = date.today()
         now = datetime.now(tz)
-        current_time = now.strftime("%H:%M:%S %p")
+        time = now.strftime("%H:%M:%S %p")
 
         # 7. Background Tasks
         asyncio.create_task(check_expired_premium(WebavBot))
@@ -126,7 +125,7 @@ async def Webav_start():
         try:
             await WebavBot.send_message(
                 chat_id=LOG_CHANNEL,
-                text=script.RESTART_TXT.format(today, current_time)
+                text=script.RESTART_TXT.format(today, time)
             )
         except Exception:
             logger.error("LOG CHANNEL ERROR", exc_info=True)

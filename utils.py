@@ -21,6 +21,15 @@ def get_size(size):
     i = int(math.floor(math.log(size, 1024)))
     return f"{round(size / math.pow(1024, i), 2)} {units[i]}"
 
+def humanbytes(size):
+    """ওয়েব সার্ভারের জন্য প্রয়োজনীয় ফাংশন"""
+    if not size:
+        return "0 B"
+    size = int(size)
+    units = ["B", "KB", "MB", "GB", "TB"]
+    i = int(math.floor(math.log(size, 1024)))
+    return f"{round(size / math.pow(1024, i), 2)} {units[i]}"
+
 def get_readable_time(seconds: int) -> str:
     count = 0
     ping_time = ""

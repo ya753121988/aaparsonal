@@ -21,7 +21,7 @@ async def channel_receive_handler(bot: Client, broadcast: Message):
                 try:
                     await bot.send_message(
                         chat_id,
-                        f"🚫 **Tʜɪꜱ ᴄʜանɴᴇʟ ɪꜱ ʙᴀɴɴᴇᴅ ғʀᴏᴍ ᴜꜱɪɴɢ ᴛʜᴇ ʙᴏᴛ.**\n\n"
+                        f"🚫 **Tʜɪꜱ ᴄʜᴀɴɴᴇʟ ɪꜱ ʙᴀɴɴᴇᴅ ғʀᴏᴍ ᴜꜱɪɴɢ ᴛʜᴇ ʙᴏᴛ.**\n\n"
                         f"🔄 **Cᴏɴᴛᴀᴄᴛ ᴀᴅᴍɪɴ ɪғ ʏᴏᴜ ᴛʜɪɴᴋ ᴛʜɪꜱ ɪꜱ ᴀ ᴍɪꜱᴛᴀᴋᴇ.**\n\n@AV_OWNER_BOT"
                     )
                 except:
@@ -46,7 +46,7 @@ async def channel_receive_handler(bot: Client, broadcast: Message):
             text=f"**Channel Name:** `{broadcast.chat.title}`\n**CHANNEL ID:** `{broadcast.chat.id}`\n**Rᴇǫᴜᴇsᴛ ᴜʀʟ:** {stream}",
             quote=True
         )
-        new_caption = script.CAPTION.format(CHANNEL, file_name)
+        new_caption = CHANNEL_FILE_CAPTION.format(CHANNEL, file_name)
         buttons_list = [
             [InlineKeyboardButton("• ꜱᴛʀᴇᴀᴍ •", url=stream),
              InlineKeyboardButton("• ᴅᴏᴡɴʟᴏᴀᴅ •", url=download)],
@@ -124,7 +124,7 @@ async def group_link_handler(bot: Client, message: Message):
             ])
         buttons = InlineKeyboardMarkup(buttons_list)
         await status_msg.edit_text(
-            text=f"📂 **𝘍𝘪𝘭𝘦 𝘕𝘢𝘮𝘦:** {file_name}\n\n🔗 **𝘓𝘪𝘯𝘬𝘴 𝘎𝘦𝘯𝘦𝘳𝘢ᴛ𝘦𝘥 𝘚𝘶𝘤𝘤𝘦𝘴𝘴𝘧𝘶𝘭𝘭𝘺!**",
+            text=f"📂 **𝘍𝘪𝘭𝘦 𝘕𝘢𝘮𝘦:** {file_name}\n\n🔗 **𝘓𝘪𝘯𝘬𝘴 𝘎𝘦𝘯𝘦𝘳𝘢𝘵𝘦𝘥 𝘚𝘶𝘤𝘤𝘦𝘴𝘴𝘧𝘶𝘭𝘭𝘺!**",
             reply_markup=buttons,
             parse_mode=enums.ParseMode.HTML
         )
@@ -132,3 +132,4 @@ async def group_link_handler(bot: Client, message: Message):
     except Exception as e:
         print(f"Group Link Error: {e}")
         await message.reply_text(f"❌ Error: `{e}`")
+        

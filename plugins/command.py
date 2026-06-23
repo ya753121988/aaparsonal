@@ -20,9 +20,28 @@ from plugins.utils import is_user_joined
 from plugins.batch import decode
 from web.utils import StartTime, __version__
 from plugins.check_verification import av_x_verification, verify_user_on_start
-from utils import temp, get_size, get_readable_time, auto_delete_message
+from utils import temp, get_size, get_readable_time
 
 logger = logging.getLogger(__name__)
+
+# ================= 🗑️ ইউনিভার্সাল অটো ডিলিট ইঞ্জিন (১০০% ফিক্সড) =================
+async def local_auto_delete_handler(messages, delay):
+    """
+    এটি ভিডিও, অডিও, এপিকে বা ফাইল—সবকিছুই ডিলিট করতে সক্ষম।
+    এটি বাইরের কোনো utils ফাইলের এরর দ্বারা প্রভাবিত হবে না।
+    """
+    if not AUTO_DELETE:
+        return
+    await asyncio.sleep(delay)
+    if not isinstance(messages, list):
+        messages = [messages]
+    for msg in messages:
+        try:
+            await msg.delete()
+        except Exception as e:
+            logger.error(f"Auto-delete failed: {e}")
+
+# =========================================================================
 
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start(client, message):
@@ -66,7 +85,7 @@ async def start(client, message):
         )
         return
 
-    # 6. Default Welcome Message (Only sends if NO argument is passed)
+    # 6. Default Welcome Message
     if not argument or argument == "start":
         buttons = [
             [
@@ -109,10 +128,10 @@ async def start(client, message):
             return await message.reply_text("<b>𝘠𝘰𝘶 𝘤𝘢𝘯𝘯𝘰𝘵 𝘳𝘦𝘧𝘦𝘳 𝘺𝘰𝘶𝘳𝘴𝘦𝘭𝘧! 🤣</b>")
         
         if await db.is_user_in_list(user_id):
-            return await message.reply_text("<b>𝘠𝘰𝘶 𝘩𝘢𝘷𝘦 𝘢𝘭𝘳𝘦𝘢𝘥𝘺 𝘣𝘦𝘦𝘯 𝘪𝘯𝘷𝘪𝘵𝘦𝘥!</b>")
+            return await message.reply_text("<b>𝘠𝘰𝘶 𝘩𝘢𝘷𝘦 𝘢𝘭րᴇ𝘢𝘥𝘺 𝘣𝘦𝘦𝘯 𝘪𝘯𝘷𝘪𝘵𝘦𝘥!</b>")
         
         if user_existed:
-            return await message.reply_text("<b>𝘠𝘰𝘶 𝘢𝘳𝘦 𝘢𝘭𝘳𝘦𝘢𝘥𝘺 𝘢 𝘶𝘴𝘦𝘳!</b>")
+            return await message.reply_text("<b>𝘠𝘰𝘶 𝘢𝘳𝘦 𝘢𝘭րᴇ𝘢𝘥𝘺 𝘢 𝘶𝘴𝘦𝘳!</b>")
         
         try:
             inviter = await client.get_users(inviter_id)
@@ -166,7 +185,7 @@ async def start(client, message):
                 end_id = int(end_id)
                 status_msg = await message.reply_text(
                     "🔄 **𝘗𝘳𝘰𝘤𝘦𝘴𝘴𝘪𝘯𝘨 𝘉𝘢𝘵𝘤𝘩 𝘙𝘦𝘲𝘶𝘦𝘴𝘵...**\n"
-                    "<i>𝘚𝘦𝘯𝘥𝘪𝘯𝘨 𝘺𝘰𝘶𝘳 𝘩𝘦𝘭𝘱𝘦𝘴 </i>"
+                    "<i>𝘚𝘦𝘯𝘥𝘪𝘯𝘨 𝘺𝘰𝘶𝘳 𝘧𝘪𝘭𝘦𝘴 </i>"
                 )
                 for i in range(start_id, end_id + 1):
                     try:
@@ -182,6 +201,7 @@ async def start(client, message):
                         file_btn = InlineKeyboardMarkup(
                             [[InlineKeyboardButton("🔴 ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ & ғᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ 🔴", callback_data=f'stream#{i}')]]
                         )
+                        # ভিডিও/ফাইল পাঠানো হচ্ছে
                         sent_msg = await client.copy_message(
                             chat_id=user_id,
                             from_chat_id=int(BIN_CHANNEL),
@@ -189,9 +209,10 @@ async def start(client, message):
                             caption=caption,
                             reply_markup=file_btn
                         )
-                        # অটো ডিলিট যুক্ত করা হয়েছে
+                        # ব্যাচ ফাইলের ক্ষেত্রে অটো ডিলিট কল
                         if AUTO_DELETE:
-                            asyncio.create_task(auto_delete_message(sent_msg, AUTO_DELETE_TIME)) 
+                            asyncio.create_task(local_auto_delete_handler(sent_msg, int(AUTO_DELETE_TIME)))
+                        
                         await asyncio.sleep(1.5)
 
                     except FloodWait as e:
@@ -202,11 +223,11 @@ async def start(client, message):
                 await status_msg.delete()
                 warn_msg = await message.reply_text(
                     f"✅ 𝖠𝗅𝗅 𝖥𝗂𝗅𝖾𝗌 𝖢𝗈𝗆𝗉𝗅𝖾𝗍𝖾 😁!\n\n"
-                    f"⚠️ 𝖨𝖬𝖯𝖮𝖱𝖳𝖠𝖭𝖳: 𝖥𝗂𝗅𝖾𝗌 𝗐𝗂𝗅𝗅 𝖻𝖾 𝖣𝖤𝖫𝖤𝖳𝖤𝖣 𝗂𝗇 {AUTO_DELETE_TIME//60} 𝖬𝗂𝗇𝗎𝗍𝖾𝗌.\n"
-                    f"📥 𝖥𝗈𝗋𝗐𝖺𝗋𝖽 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝗌𝖺𝗀𝖾𝗌 𝖭𝖮𝖶!"
+                    f"⚠️ 𝖨𝖬𝖯𝖮𝖱𝖳𝖠𝖭𝖳: 𝖥𝗂𝗅𝖾𝗌 𝗐𝗂𝗅𝗅 𝖻𝖾 𝖣𝖤𝖫𝖤𝖳𝖤𝖣 𝗂𝗇 {int(AUTO_DELETE_TIME)//60} 𝖬𝗂𝗇𝗎𝗍𝖾𝗌.\n"
+                    f"📥 𝖥𝗈𝗋ᴡᴀʀᴅ 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝗌𝖺𝗀𝖾𝗌 𝖭𝖮𝖶!"
                 )
                 if AUTO_DELETE:
-                    asyncio.create_task(auto_delete_message(warn_msg, AUTO_DELETE_TIME))
+                    asyncio.create_task(local_auto_delete_handler(warn_msg, int(AUTO_DELETE_TIME)))
                 return
             except Exception as e:
                 await message.reply_text(f"❌ Error: {e}")
@@ -236,6 +257,7 @@ async def start(client, message):
             btn_markup = InlineKeyboardMarkup(
                 [[InlineKeyboardButton("🔴 ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ & ғᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ 🔴", callback_data=f'stream#{file_id}')]]
             )
+            # ১. ভিডিও/APK/অডিও পাঠানো হচ্ছে
             sent_msg = await client.copy_message(
                 chat_id=user_id,
                 from_chat_id=int(BIN_CHANNEL),
@@ -243,15 +265,14 @@ async def start(client, message):
                 caption=caption,
                 reply_markup=btn_markup
             )
+            # ২. ওয়ার্নিং মেসেজ পাঠানো হচ্ছে
             warn_msg = await message.reply_text(
-                f"⚠️ 𝖨𝖬𝖯𝖮𝖱𝖳𝖠𝖭𝖳: 𝖥𝗂𝗅𝖾 𝗐𝗂𝗅𝗅 𝖻𝖾 𝖣𝖤𝖫𝖤𝖳𝖤𝖣 𝗂𝗇 {AUTO_DELETE_TIME//60} 𝖬𝗂𝗇𝗎𝗍𝖾𝗌.\n"
-                f"📥 𝖥𝗈𝗋ᴡᴀʀᴅ 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝗌𝖺𝗀𝖾𝗌!",
+                f"⚠️ **IMPORTANT:** File will be DELETED in {int(AUTO_DELETE_TIME)//60} Minutes.\n📥 Forward to Saved Messages!",
                 quote=True
             )
-            # অটো ডিলিট লজিক কল করা হয়েছে
+            # ৩. ১০০% গ্যারান্টিড অটো ডিলিট কল (ফাইল ও মেসেজ দুটোই ডিলিট হবে)
             if AUTO_DELETE:
-                asyncio.create_task(auto_delete_message(sent_msg, AUTO_DELETE_TIME)) 
-                asyncio.create_task(auto_delete_message(warn_msg, AUTO_DELETE_TIME))
+                asyncio.create_task(local_auto_delete_handler([sent_msg, warn_msg], int(AUTO_DELETE_TIME)))
             return
 
 @Client.on_message(filters.command("add_point") & filters.user(ADMINS))
@@ -274,7 +295,7 @@ async def add_points_admin(client, message):
         new_balance = await db.change_points(user_id, amount)
         if new_balance >= 100:
             await db.add_refer_points(user_id, 0)
-            seconds = 2592000
+            seconds = 2592000 # 30 Days in seconds
             expiry_time = datetime.datetime.now() + datetime.timedelta(seconds=seconds)
             await db.update_user({"id": user_id, "expiry_time": expiry_time})
             await client.send_message(PREMIUM_LOGS, script.PREMIUM_POINTS_LOG.format(user=u_mention, name=u_name, uid=user_id, username=u_username, added_by=message.from_user.mention, points=amount))
@@ -292,7 +313,7 @@ async def add_points_admin(client, message):
                         f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂𝗈𝗇𝗌!\n\n"
                         f"𝖠𝖽𝗆𝗂𝗇 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉𝗈𝗂𝗇𝗍𝗌 𝗍𝗈 𝗒𝗈𝗎𝗋 𝗐𝖺𝗅𝗅𝖾𝗍.\n"
                         f"𝖸𝗈𝗎 𝗋𝖾𝖺𝖼𝗁𝖾𝖽 100 𝖯𝗈𝗂𝗇𝗍𝗌 𝗍𝖺𝗋𝗀𝖾𝗍!\n\n"
-                        f"💎 1 𝖬𝗈𝗇𝗍𝗁 𝖯𝗋𝖾𝗆𝗂𝗎𝗆 𝖲𝗎𝖻𝗌𝖼ริปชัน 𝖠𝖼𝗍𝗂𝗏𝖺𝗍𝖾𝖽!"
+                        f"💎 1 𝖬𝗈𝗇𝗍𝗁 𝖯𝗋𝖾𝗆𝗂𝗎𝗆 𝖲𝗎𝖻𝗌𝖼𝗋𝗂𝗉𝗍𝗂𝗈𝗇 𝖠𝖼𝗍𝗂𝗏𝖺𝗍𝖾𝖽!"
                     )
                 )
             except Exception:
@@ -381,9 +402,8 @@ async def list_user_files(client, message: Message):
         name = f["file_name"][:40]
         btns.append([InlineKeyboardButton(name, callback_data=f"sendfile_{f['file_id']}")])
     nav_btns = []
-    if total_pages > 1:
-        if page < total_pages:
-            nav_btns.append(InlineKeyboardButton("➡️ Nᴇxᴛ", callback_data=f"filespage_{page + 1}"))
+    if page < total_pages:
+        nav_btns.append(InlineKeyboardButton("➡️ Nᴇxᴛ", callback_data=f"filespage_{page + 1}"))
     nav_btns.append(InlineKeyboardButton("❌ ᴄʟᴏsᴇ ❌", callback_data="close_data"))
     btns.append(nav_btns)
     await message.reply_photo(photo=FILE_PIC,
@@ -407,9 +427,8 @@ async def delete_files_list(client, message):
         name = f["file_name"][:40]
         btns.append([InlineKeyboardButton(name, callback_data=f"deletefile_{f['file_id']}")])
     nav_btns = []
-    if total_pages > 1:
-        if page < total_pages:
-            nav_btns.append(InlineKeyboardButton("➡️ Nᴇxᴛ", callback_data=f"delfilespage_{page + 1}"))
+    if page < total_pages:
+        nav_btns.append(InlineKeyboardButton("➡️ Nᴇxᴛ", callback_data=f"delfilespage_{page + 1}"))
     nav_btns.append(InlineKeyboardButton("❌ ᴄʟᴏsᴇ ❌", callback_data="close_data"))
     btns.append(nav_btns)
     await message.reply_photo(photo=FILE_PIC,

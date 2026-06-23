@@ -137,6 +137,18 @@
       "description": "Max files allowed per user",
       "value": "10"
     },
+    "AUTO_DELETE": {
+      "description": "Enable Auto Delete Sent Files (True/False)",
+      "value": "True"
+    },
+    "AUTO_DELETE_TIME": {
+      "description": "Time in seconds before deleting files (e.g. 600)",
+      "value": "600"
+    },
+    "AUTO_KEEP_ALIVE": {
+      "description": "Enable Uptime Auto-Ping (True/False)",
+      "value": "True"
+    },
     "PING_INTERVAL": {
       "description": "Ping interval (seconds)",
       "value": "1200"

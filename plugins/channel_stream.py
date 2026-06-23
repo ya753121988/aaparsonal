@@ -21,7 +21,7 @@ async def channel_receive_handler(bot: Client, broadcast: Message):
                 try:
                     await bot.send_message(
                         chat_id,
-                        f"🚫 **Tʜɪꜱ ᴄʜানɴᴇʟ ɪꜱ ʙᴀɴɴᴇᴅ ғʀᴏᴍ ᴜꜱɪɴɢ ᴛʜᴇ ʙᴏᴛ.**\n\n"
+                        f"🚫 **Tʜɪꜱ ᴄʜանɴᴇʟ ɪꜱ ʙᴀɴɴᴇᴅ ғʀᴏᴍ ᴜꜱɪɴɢ ᴛʜᴇ ʙᴏᴛ.**\n\n"
                         f"🔄 **Cᴏɴᴛᴀᴄᴛ ᴀᴅᴍɪɴ ɪғ ʏᴏᴜ ᴛʜɪɴᴋ ᴛʜɪꜱ ɪꜱ ᴀ ᴍɪꜱᴛᴀᴋᴇ.**\n\n@AV_OWNER_BOT"
                     )
                 except:
@@ -46,7 +46,7 @@ async def channel_receive_handler(bot: Client, broadcast: Message):
             text=f"**Channel Name:** `{broadcast.chat.title}`\n**CHANNEL ID:** `{broadcast.chat.id}`\n**Rᴇǫᴜᴇsᴛ ᴜʀʟ:** {stream}",
             quote=True
         )
-        new_caption = CHANNEL_FILE_CAPTION.format(CHANNEL, file_name)
+        new_caption = script.CAPTION.format(CHANNEL, file_name)
         buttons_list = [
             [InlineKeyboardButton("• ꜱᴛʀᴇᴀᴍ •", url=stream),
              InlineKeyboardButton("• ᴅᴏᴡɴʟᴏᴀᴅ •", url=download)],

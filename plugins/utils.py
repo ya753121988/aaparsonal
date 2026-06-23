@@ -1,90 +1,85 @@
-from pyrogram.errors import UserNotParticipant, ChatAdminRequired
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from pyrogram.enums import ParseMode
-from Script import script
-from utils import temp
-from info import AUTH_PICS, AUTH_CHANNEL, ENABLE_LIMIT, RATE_LIMIT_TIMEOUT, MAX_FILES, AUTO_DELETE, AUTO_DELETE_TIME
-import asyncio, time
+import asyncio
+import time
+import math
+import urllib.request
+from pyrogram.types import Message
+from info import AUTO_DELETE, AUTO_DELETE_TIME, URL, PING_INTERVAL
 
-rate_limit = {}
+# ===============================
+# TEMP DATA STORAGE
+# ===============================
+class Temp:
+    ME = None
+    U_NAME = None
+    B_NAME = None
+    B_LINK = None
 
-async def is_user_joined(bot, message: Message) -> bool:
-    user_id = message.from_user.id
-    bot_user = await bot.get_me()    
-    not_joined_channels = []
-    for channel_id in AUTH_CHANNEL:
-        try:
-            await bot.get_chat_member(channel_id, user_id)
-        except UserNotParticipant:
-            try:
-                chat = await bot.get_chat(channel_id)
-                try:
-                    invite_link = await bot.export_chat_invite_link(channel_id)
-                except ChatAdminRequired:
-                    await message.reply_text(
-                        text = (
-                            "<i>🔒 Bᴏᴛ ɪs ɴᴏᴛ ᴀɴ ᴀᴅᴍɪɴ ɪɴ ᴛʜɪs ᴄʜᴀɴɴᴇʟ.\n"
-                            "Pʟᴇᴀsᴇ ᴄᴏɴᴛᴀᴄᴛ ᴛʜᴇ ᴅᴇᴠᴇʟᴏᴘᴇʀ:</i> "
-                            "<b><a href='https://t.me/AV_SUPPORT_GROUP'>[ ᴄʟɪᴄᴋ ʜᴇʀᴇ ]</a></b>"
-                        ),
-                        parse_mode=ParseMode.HTML,
-                        disable_web_page_preview=True
-                    )
-                    return False
-                not_joined_channels.append((chat.title, invite_link))
-            except Exception as e:
-                print(f"[ERROR] Chat fetch failed: {e}")
-                continue
-        except Exception as e:
-            print(f"[ERROR] get_chat_member failed: {e}")
-            continue
+temp = Temp()
 
-    if not_joined_channels:
-        buttons = [
-            [InlineKeyboardButton(f"[{i+1}] {title}", url=link)]
-            for i, (title, link) in enumerate(not_joined_channels)
-        ]
-        buttons.append([
-            InlineKeyboardButton("🔄 Try Again", url=f"https://t.me/{bot_user.username}?start=start")
-        ])
-        await message.reply_photo(
-            photo=AUTH_PICS,
-            caption=script.AUTH_TXT.format(message.from_user.mention),
-            reply_markup=InlineKeyboardMarkup(buttons),
-            parse_mode=ParseMode.HTML
-        )
-        return False
-
-    return True
-    
-async def is_user_allowed(user_id):
-    """📌 এটি ফাইল লিমিট চেক করবে"""
-    current_time = time.time()
-
-    if ENABLE_LIMIT:
-        if user_id in rate_limit:
-            file_count, last_time = rate_limit[user_id]
-            if file_count >= MAX_FILES and (current_time - last_time) < RATE_LIMIT_TIMEOUT:
-                remaining_time = int(RATE_LIMIT_TIMEOUT - (current_time - last_time))
-                return False, remaining_time  # ❌ Limit Exceeded
-            elif file_count >= MAX_FILES:
-                rate_limit[user_id] = [1, current_time]  # ✅ Reset Limit
-            else:
-                rate_limit[user_id][0] += 1
+# ===============================
+# TIME & SIZE HELPERS
+# ===============================
+def get_readable_time(seconds: int) -> str:
+    count = 0
+    ping_time = ""
+    time_list = []
+    time_suffix_list = ["s", "m", "h", "days"]
+    while count < 4:
+        count += 1
+        if count < 3:
+            remainder, result = divmod(seconds, 60)
         else:
-            rate_limit[user_id] = [1, current_time]
+            remainder, result = divmod(seconds, 24)
+        if seconds == 0 and remainder == 0:
+            break
+        time_list.append(int(result))
+        seconds = int(remainder)
+    for i in range(len(time_list)):
+        time_list[i] = str(time_list[i]) + time_suffix_list[i]
+    if len(time_list) == 4:
+        ping_time += time_list.pop() + ", "
+    time_list.reverse()
+    ping_time += ":".join(time_list)
+    return ping_time
 
-    return True, 0  # ✅ Allowed
+def get_size(size):
+    if not size:
+        return "0 B"
+    size = int(size)
+    units = ["B", "KB", "MB", "GB", "TB"]
+    i = int(math.floor(math.log(size, 1024)))
+    return f"{round(size / math.pow(1024, i), 2)} {units[i]}"
 
+# ===============================
+# AUTO DELETE LOGIC
+# ===============================
 async def auto_delete_message(message: Message, delay: int = None):
-    """📌 এটি নির্দিষ্ট সময় পর ফাইল বা মেসেজ ডিলিট করবে"""
+    """এটি নির্দিষ্ট সময় পর মেসেজ ডিলিট করবে"""
     if not AUTO_DELETE:
         return
+    
     wait_time = delay if delay is not None else AUTO_DELETE_TIME
     await asyncio.sleep(wait_time)
+    
     try:
         await message.delete()
-        if message.reply_to_message:
-            await message.reply_to_message.delete()
-    except Exception as e:
-        print(f"Error auto-deleting message: {e}")
+        if hasattr(message, 'reply_to_message') and message.reply_to_message:
+            try:
+                await message.reply_to_message.delete()
+            except:
+                pass
+    except Exception:
+        pass
+
+# ===============================
+# PING SERVER LOGIC
+# ===============================
+def ping_server():
+    """বটকে সার্ভারে জীবিত রাখার জন্য পিং লজিক"""
+    while True:
+        try:
+            urllib.request.urlopen(URL)
+            print(f"Ping successful to: {URL}")
+        except Exception as e:
+            print(f"Ping failed: {e}")
+        time.sleep(PING_INTERVAL)

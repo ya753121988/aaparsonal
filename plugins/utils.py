@@ -75,3 +75,13 @@ async def is_user_allowed(user_id):
             rate_limit[user_id] = [1, current_time]
 
     return True, 0  # ✅ Allowed
+
+# --- নিচের এই ফাংশনটি আপনার ফাইলে ছিল না, তাই ডিলেট হচ্ছিল না ---
+
+async def auto_delete_message(message: Message, delay: int):
+    """📌 এটি নির্দিষ্ট সময় পর ফাইল বা মেসেজ ডিলিট করবে"""
+    await asyncio.sleep(delay)
+    try:
+        await message.delete()
+    except Exception as e:
+        print(f"Error auto-deleting message: {e}")

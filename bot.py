@@ -98,7 +98,7 @@ async def Webav_start():
 
         # 4. Heroku Ping
         if ON_HEROKU:
-            asyncio.create_task(asyncio.to_thread(ping_server))
+            asyncio.create_task(ping_server())
 
         # 5. Set Global Info
         me = await WebavBot.get_me()

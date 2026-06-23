@@ -58,7 +58,7 @@ async def is_user_joined(bot, message: Message) -> bool:
     return True
     
 async def is_user_allowed(user_id):
-    """📌 यह फंक्शन चेक करेगा कि यूजर की फाइल লিমিট খতম হুই হাই ইয়া নহি"""
+    """📌 यह फंक्शन चेक करेगा कि यूजर की फाइल लिमिट खत्म हुई है या नहीं"""
     current_time = time.time()
 
     if ENABLE_LIMIT:
@@ -75,11 +75,3 @@ async def is_user_allowed(user_id):
             rate_limit[user_id] = [1, current_time]
 
     return True, 0  # ✅ Allowed
-
-async def auto_delete_message(message: Message, delay: int):
-    """📌 এটি নির্দিষ্ট সময় পর ফাইল বা মেসেজ ডিলিট করবে"""
-    await asyncio.sleep(delay)
-    try:
-        await message.delete()
-    except Exception as e:
-        print(f"Error auto-deleting message: {e}")

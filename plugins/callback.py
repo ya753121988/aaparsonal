@@ -12,12 +12,11 @@ from pyrogram import Client, filters, enums
 from pyrogram.errors import *
 from pyrogram.types import Message
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from info import ADMINS, URL, OWNER_USERNAME, SUPPORT, CHANNEL, BIN_CHANNEL, QR_CODE, FILE_CAPTION, AUTO_DELETE, AUTO_DELETE_TIME
+from info import ADMINS, URL, OWNER_USERNAME, SUPPORT, CHANNEL, BIN_CHANNEL, QR_CODE, FILE_CAPTION
 from datetime import datetime
 from web.utils.file_properties import get_hash
 from utils import temp, get_readable_time, get_size
 from web.utils import StartTime, __version__
-from plugins.utils import auto_delete_message
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +140,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif query.data == "reffff":
         user_id = query.from_user.id
         points = await db.get_refer_points(user_id)
-        # FIXED: Added quotes and f-string formatting
         ref_link = f"https://t.me/{temp.U_NAME}?start=reff_{user_id}"
         share_link = f"https://telegram.me/share/url?url={ref_link}&text=Join%20Now%20For%20Movies!"
         buttons = [[
@@ -247,16 +245,14 @@ async def cb_handler(client: Client, query: CallbackQuery):
             caption = None
             if media:
                 file_name = getattr(media, "file_name", "Unnamed") 
+                file_size = get_size(media.file_size)
                 caption = FILE_CAPTION.format(CHANNEL, file_name)
-            sent_msg = await client.copy_message(
+            await client.copy_message(
                 chat_id=user_id,
                 from_chat_id=BIN_CHANNEL,
                 message_id=file_id,
                 caption=caption
             )
-            # ফাইল ডিলিট করার টাস্ক অ্যাড করা হলো
-            if AUTO_DELETE:
-                asyncio.create_task(auto_delete_message(sent_msg, AUTO_DELETE_TIME))
             return await query.answer()
         except Exception:
             return await query.answer("⚠️ Failed to send file.", show_alert=True)

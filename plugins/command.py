@@ -59,11 +59,13 @@ async def start(client, message):
     # 5. Handle Help Command
     if argument == "help":
         buttons = [[InlineKeyboardButton('• ᴄʟᴏsᴇ •', callback_data='close_data')]]
-        await message.reply_text(
+        help_msg = await message.reply_text(
             text=script.HELP2_TXT,
             reply_markup=InlineKeyboardMarkup(buttons),
             disable_web_page_preview=True
         )
+        if AUTO_DELETE:
+            asyncio.create_task(auto_delete_message(help_msg, AUTO_DELETE_TIME))
         return
 
     # 6. Default Welcome Message (Only sends if NO argument is passed)
@@ -91,11 +93,13 @@ async def start(client, message):
             ]
         ]
 
-        await message.reply_photo(
+        welcome_msg = await message.reply_photo(
             photo=PICS,
             caption=script.START_TXT.format(mention, temp.U_NAME),
             reply_markup=InlineKeyboardMarkup(buttons)
         )
+        if AUTO_DELETE:
+            asyncio.create_task(auto_delete_message(welcome_msg, AUTO_DELETE_TIME))
         return
 
     # ================= 7. REFERRAL SYSTEM =================
@@ -104,26 +108,37 @@ async def start(client, message):
         try:
             inviter_id = int(argument.split("_")[1])
         except ValueError:
-            return await message.reply_text("Irna 𝘐𝘯𝘷𝘢𝘭𝘪𝘥 𝘙𝘦𝘧𝘦𝘳 𝘓𝘪𝘯𝘬!")
+            reff_err = await message.reply_text("Irna 𝘐𝘯𝘷𝘢𝘭𝘪𝘥 𝘙𝘦𝘧𝘦𝘳 𝘓𝘪𝘯𝘬!")
+            if AUTO_DELETE: asyncio.create_task(auto_delete_message(reff_err, 30))
+            return
         
         if inviter_id == user_id:
-            return await message.reply_text("<b>𝘠𝘰𝘶 𝘤𝘢𝘯𝘯𝘰𝘵 𝘳𝘦𝘧𝘦𝘳 𝘺𝘰𝘶𝘳𝘴𝘦𝘭𝘧! 🤣</b>")
+            self_reff = await message.reply_text("<b>𝘠𝘰𝘶 𝘤𝘢𝘯𝘯𝘰𝘵 𝘳𝘦𝘧𝘦𝘳 𝘺𝘰𝘶𝘳𝘴𝘦𝘭𝘧! 🤣</b>")
+            if AUTO_DELETE: asyncio.create_task(auto_delete_message(self_reff, 30))
+            return
         
         if await db.is_user_in_list(user_id):
-            return await message.reply_text("<b>𝘠𝘰𝘶 𝘩𝘢𝘷𝘦 𝘢𝘭𝘳𝘦𝘢𝘥𝘺 𝘣𝘦𝘦𝘯 𝘪𝘯𝘷𝘪𝘵𝘦𝘥!</b>")
+            already_invited = await message.reply_text("<b>𝘠𝘰𝘶 𝘩𝘢ᴠ𝘦 𝘢𝘭𝘳𝘦𝘢𝘥𝘺 𝘣𝘦𝘦𝘯 𝘪𝘯𝘷𝘪𝘵𝘦𝘥!</b>")
+            if AUTO_DELETE: asyncio.create_task(auto_delete_message(already_invited, 30))
+            return
         
         if user_existed:
-            return await message.reply_text("<b>𝘠𝘰𝘶 𝘢𝘳𝘦 𝘢𝘭𝘳𝘦𝘢𝘥𝘺 𝘢 𝘶𝘴𝘦𝘳!</b>")
+            already_user = await message.reply_text("<b>𝘠𝘰𝘶 𝘢𝘳𝘦 𝘢𝘭𝘳𝘦𝘢𝘥𝘺 𝘢 𝘶𝘴𝘦𝘳!</b>")
+            if AUTO_DELETE: asyncio.create_task(auto_delete_message(already_user, 30))
+            return
         
         try:
             inviter = await client.get_users(inviter_id)
         except Exception:
-            return await message.reply_text("𝘐𝘯𝘷𝘢𝘭𝘪𝘥 𝘐𝘯𝘷𝘪𝘵𝘦𝘳 𝘐𝘋.")
+            inv_err = await message.reply_text("𝘐𝘯𝘷𝘢𝘭𝘪𝘥 𝘐𝘯𝘷𝘪ᴛ𝘦𝘳 𝘐𝘋.")
+            if AUTO_DELETE: asyncio.create_task(auto_delete_message(inv_err, 30))
+            return
         
         current_points = await db.get_refer_points(inviter_id)
         new_total = current_points + 10
         
-        await message.reply_text(f"𝘠𝘰𝘶 𝘩𝘢𝘷𝘦 𝘣𝘦𝘦𝘯 𝘴𝘶𝘤𝘤𝘦𝘴𝘴𝘧𝘶𝘭𝘭𝘺 𝘪𝘯𝘷𝘪𝘵𝘦𝘥 𝘣𝘺 {inviter.mention}!")
+        reff_msg = await message.reply_text(f"𝘠𝘰𝘶 𝘩𝘢ᴠ𝘦 𝘣𝘦𝘦𝘯 𝘴𝘶𝘤𝘤𝘦𝘴𝘴𝘧𝘶𝘭𝘭𝘺 𝘪𝘯𝘷𝘪𝘵𝘦𝘥 𝘣𝘺 {inviter.mention}!")
+        if AUTO_DELETE: asyncio.create_task(auto_delete_message(reff_msg, 60))
         
         if new_total >= 100:
             await db.add_refer_points(inviter_id, 0)
@@ -134,7 +149,7 @@ async def start(client, message):
             await client.send_message(PREMIUM_LOGS, script.PREMIUM_REFERRAL_LOG.format(inviter=inviter.mention, inviter_id=inviter_id, user=mention, user_id=user_id))
             await client.send_message(
                 chat_id=inviter_id,
-                text=f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂𝗈𝗇𝗌 {inviter.mention}!\n\n𝖸𝗈𝗎 𝖼𝗈𝗅𝗅𝖾𝖼𝗍𝖾𝖽 100 𝖯𝗈𝗂𝗇𝗍𝗌 𝖺𝗇𝖽 𝗐𝗈𝗇 1 𝖬𝗈𝗇𝗍𝗁 𝖯𝗋𝖾𝗆𝗂𝗎𝗆 𝖲𝗎𝖻𝗌𝖼𝗋𝗂𝗉𝗍𝗂ᴏ𝗇!"
+                text=f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂𝗈𝗇𝗌 {inviter.mention}!\n\n𝖸𝗈𝗎 𝖼𝗈𝗅𝗅𝖾𝖼𝗍𝖾𝖽 100 𝖯𝗈𝗂𝗇𝗍𝗌 𝖺𝗇𝖽 𝗐𝗈𝗇 1 𝖬𝗈𝗇𝗍𝗁 𝖯𝗋𝖾ᴍ𝗂𝗎ᴍ 𝖲𝗎𝖻𝗌𝖼𝗋𝗂𝗉𝗍𝗂ᴏ𝗇!"
             )
         else:
             await db.add_refer_points(inviter_id, new_total)
@@ -169,8 +184,8 @@ async def start(client, message):
                 start_id = int(start_id)
                 end_id = int(end_id)
                 status_msg = await message.reply_text(
-                    "🔄 **𝘗𝘳𝘰𝘤𝘦𝘴𝘴𝘪𝘯𝘨 𝘉𝘢𝘵𝘤𝘩 𝘙𝘦𝘲𝘶𝘦𝘴𝘵...**\n"
-                    "<i>𝘚𝘦𝘯𝘥𝘪𝘯𝘨 𝘺𝘰𝘶𝘳 𝘧𝘪𝘭𝘦𝘴 </i>"
+                    "🔄 **𝘗𝘳𝘰𝘤𝘦𝘴𝘴𝘪𝘯𝘨 𝘉𝘢𝘵ᴄ𝘩 𝘙𝘦𝘲𝘶𝘦𝘴𝘵...**\n"
+                    "<i>𝘚𝘦𝘯𝘥𝘪𝘯𝘨 𝘺ᴏᴜร์ 𝘧𝘪𝘭𝘦𝘴 </i>"
                 )
                 for i in range(start_id, end_id + 1):
                     try:
@@ -209,13 +224,14 @@ async def start(client, message):
                 warn_msg = await message.reply_text(
                     f"✅ 𝖠𝗅𝗅 𝖥𝗂𝗅𝖾𝗌 𝖢𝗈𝗆𝗉𝗅𝖾𝗍𝖾 😁!\n\n"
                     f"⚠️ 𝖨𝖬𝖯𝖮𝖱𝖳𝖠𝖭𝖳: 𝖥𝗂𝗅𝖾𝗌 𝗐𝗂𝗅𝗅 𝖻𝖾 𝖣𝖤𝖫𝖤𝖳𝖤𝖣 𝗂𝗇 {del_time_display} 𝖬𝗂𝗇𝗎𝗍𝖾𝗌.\n"
-                    f"📥 𝖥𝗈𝗋𝗐𝖺𝗋𝖽 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝗌𝖺𝗀𝖾𝗌 𝖭𝖮𝖶!"
+                    f"📥 𝖥𝗈𝗋𝗐𝖺𝗋𝖽 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝚜𝖺ɢ𝖾𝗌 𝖭𝖶!"
                 )
                 if AUTO_DELETE:
                     asyncio.create_task(auto_delete_message(warn_msg, AUTO_DELETE_TIME))
                 return
             except Exception as e:
-                await message.reply_text(f"❌ Error: {e}")
+                err_m = await message.reply_text(f"❌ Error: {e}")
+                if AUTO_DELETE: asyncio.create_task(auto_delete_message(err_m, 60))
                 return
 
         # ================= SINGLE FILE START =================
@@ -231,7 +247,10 @@ async def start(client, message):
             try:
                 _, file_id = argument.split("_", 1)
             except ValueError:
-                return await message.reply("<b>⚠️ 𝘐𝘯𝘷𝘢𝘭𝘪𝘥 𝘍𝘪𝘭𝘦 𝘓𝘪𝘯𝘬!</b>")
+                inv_f = await message.reply("<b>⚠️ 𝘐𝘯𝘷𝘢𝘭𝘪𝘥 𝘍𝘪𝘭𝘦 𝘓𝘪𝘯𝘬!</b>")
+                if AUTO_DELETE: asyncio.create_task(auto_delete_message(inv_f, 30))
+                return
+            
             original_message = await client.get_messages(int(BIN_CHANNEL), int(file_id))
             media = original_message.document or original_message.video or original_message.audio
             caption = None
@@ -239,6 +258,7 @@ async def start(client, message):
                 file_name = getattr(media, "file_name", "Unnamed File") or "Unnamed File"
                 try: caption = FILE_CAPTION.format(channel=CHANNEL, file_name=file_name)
                 except: caption = FILE_CAPTION.format(CHANNEL, file_name)
+            
             btn_markup = InlineKeyboardMarkup(
                 [[InlineKeyboardButton("🔴 ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ & ғᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ 🔴", callback_data=f'stream#{file_id}')]]
             )
@@ -253,7 +273,7 @@ async def start(client, message):
             del_time_display = AUTO_DELETE_TIME // 60
             warn_msg = await message.reply_text(
             f"⚠️ 𝖨𝖬𝖯𝖮𝖱𝖳𝖠𝖭𝖳: 𝖥𝗂𝗅𝖾 𝗐𝗂𝗅𝗅 𝖻𝖾 𝖣𝖤𝖫𝖤𝖳𝖤𝖣 𝗂𝗇 {del_time_display} 𝖬𝗂𝗇𝗎𝗍𝖾𝗌.\n"
-            f"📥 𝖥𝗈𝗋ᴡᴀʀ𝖽 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝗌𝖺𝗀𝖾𝗌!",
+            f"📥 𝖥𝗈𝗋ᴡᴀʀ𝖽 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝚜𝖺ɢ𝖾𝗌!",
             quote=True
             )
             if AUTO_DELETE:
@@ -261,12 +281,26 @@ async def start(client, message):
                 asyncio.create_task(auto_delete_message(warn_msg, AUTO_DELETE_TIME))
             return
 
+@Client.on_message(filters.command("autodelete") & filters.user(ADMINS))
+async def autodelete_info(client, message):
+    """📌 এটি একটি নতুন কমান্ড যা অটো ডিলিট স্ট্যাটাস দেখাবে"""
+    status = "Enabled ✅" if AUTO_DELETE else "Disabled ❌"
+    del_m = await message.reply_text(
+        f"🗑️ **Auto Delete Status**\n\n"
+        f"📊 Status: {status}\n"
+        f"⏰ Time: {AUTO_DELETE_TIME // 60} Minutes\n\n"
+        f"💡 আপনি info.py থেকে এটি পরিবর্তন করতে পারেন।"
+    )
+    if AUTO_DELETE: asyncio.create_task(auto_delete_message(del_m, 60))
+
 @Client.on_message(filters.command("add_point") & filters.user(ADMINS))
 async def add_points_admin(client, message):
     try:
         parts = message.text.split()
         if len(parts) != 3: 
-            return await message.reply("Usage: `/add_point user_id amount`")
+            usage = await message.reply("Usage: `/add_point user_id amount`")
+            if AUTO_DELETE: asyncio.create_task(auto_delete_message(usage, 30))
+            return
         user_id = int(parts[1])
         amount = int(parts[2])
         try:
@@ -285,47 +319,35 @@ async def add_points_admin(client, message):
             expiry_time = datetime.datetime.now() + datetime.timedelta(seconds=seconds)
             await db.update_user({"id": user_id, "expiry_time": expiry_time})
             await client.send_message(PREMIUM_LOGS, script.PREMIUM_POINTS_LOG.format(user=u_mention, name=u_name, uid=user_id, username=u_username, added_by=message.from_user.mention, points=amount))
-            await message.reply(
-                f"✅ 𝖯𝗈𝗂𝗇𝗍𝗌 𝖠𝖽𝖽𝖾𝖽 & 𝖯𝗋𝖾ᴍɪᴜᴍ 𝖠𝖼𝗍ɪ𝗏𝖺𝗍𝖾𝖽!\n\n"
+            p_msg = await message.reply(
+                f"✅ 𝖯𝗈𝗂𝗇𝗍𝗌 𝖠𝖽𝖽𝖾𝖽 & 𝖯𝗋𝖾ᴍɪᴜᴍ 𝖠𝖼ᴛɪ𝗏𝖺ᴛ𝖾𝖽!\n\n"
                 f"👤 𝖴𝗌𝖾𝗋: {u_mention}\n"
                 f"💰 𝖠𝖽𝖽𝖾𝖽: {amount}\n"
-                f"🎉 𝖴𝗌𝖾𝗋 𝗎𝗉𝗀𝗋𝖺𝖽𝖾𝖽 𝗍𝗈 𝖯𝗋𝖾𝗆𝗂𝗎ᴍ 𝖿ᴏ𝗋 1 𝖬ᴏ𝗇𝗍𝗁!\n"
-                f"📢 𝖫ᴏɢ 𝗌𝖾𝗇𝗍 𝗍𝗈 𝖢𝗁𝖺𝗇𝗇𝖾𝗅."
+                f"🎉 𝖴𝗌𝖾𝗋 𝗎𝗉𝗀𝗋𝖺𝖽𝖾𝖽 𝗍𝗈 𝖯𝗋𝖾𝗆𝗂ᴜᴍ 𝖿ᴏ𝗋 1 𝖬ᴏ𝗇ᴛ𝗁!\n"
             )
+            if AUTO_DELETE: asyncio.create_task(auto_delete_message(p_msg, 60))
             try:
                 await client.send_message(
                     chat_id=user_id,
                     text=(
-                        f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂ᴏ𝗇𝗌!\n\n"
-                        f"𝖠𝖽ᴍɪɴ 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌 𝗍ᴏ 𝗒ᴏᴜ𝗋 𝗐𝖺𝗅𝗅𝖾𝗍.\n"
-                        f"𝖸ᴏ𝗎 𝗋𝖾𝖺𝖼𝗁𝖾𝖽 100 𝖯ᴏɪ𝗇ᴛ𝗌 𝗍𝖺𝗋𝗀𝖾𝗍!\n\n"
-                        f"💎 1 𝖬ᴏ𝗇ᴛ𝗁 𝖯𝗋𝖾ᴍɪᴜᴍ 𝖲ᴜ𝖻𝗌𝖼𝗋𝗂𝗉ᴛ𝗂ᴏ𝗇 𝖠𝖼ᴛ𝗂𝗏𝖺ᴛ𝖾𝖽!"
+                        f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺ᴛ𝗎𝗅𝖺ᴛ𝗂ᴏɴ𝗌!\n\n"
+                        f"𝖠𝖽ᴍɪɴ 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌 𝗍ᴏ 𝗒ᴏᴜ𝗋 𝗐𝖺𝗅𝗅𝖾ᴛ.\n"
+                        f"𝖸ᴏ𝗎 𝗋𝖾𝖺𝼇𝗁𝖾𝖽 100 𝖯ᴏɪ𝗇ᴛ𝗌 𝗍𝖺𝗋ɢᴇᴛ!\n\n"
+                        f"💎 1 𝖬ᴏ𝗇ᴛ𝗁 𝖯𝗋𝖾ᴍ𝗂ᴜᴍ 𝖲ᴜ𝖻𝗌𝖼𝗋𝗂𝗉ᴛ𝗂ᴏ𝗇 𝖠𝼇ᴛ𝗂𝗏𝖺ᴛ𝖾𝖽!"
                     )
                 )
             except Exception:
-                await message.reply("⚠️ Premium given, but failed to DM user.")
+                pass
                 
         else:
             await client.send_message(PREMIUM_LOGS, script.POINTS_ADDED_LOG.format(user=u_mention, name=u_name, uid=user_id, added_by=message.from_user.mention, amount=amount, balance=new_balance))
-            try:
-                await client.send_message(
-                    chat_id=user_id,
-                    text=(
-                        f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂ᴏ𝗇𝗌!\n\n"
-                        f"𝖠𝖽ᴍɪɴ 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌 𝗍ᴏ 𝗒ᴏᴜ𝗋 𝗐𝖺𝗅𝗅𝖾𝗍. 💰\n"
-                        f"🔢 𝖢ᴜ𝗋𝗋𝖾𝗇ᴛ 𝖡𝖺𝗅𝖺𝗇𝖼𝖾: {new_balance}\n"
-                        f"🎯 𝖦ᴏ𝖺𝗅: 𝖱𝖾𝖺𝖼𝗁 100 𝖯ᴏɪ𝗇ᴛ𝗌 𝖿ᴏ𝗋 𝖥𝗋𝖾𝖾 𝖯𝗋𝖾ᴍɪᴜᴍ!"
-                    )
-                )
-                user_notified = "User Notified ✅"
-            except:
-                user_notified = "Failed to DM User ❌"
-            await message.reply(
-               f"✅ 𝖠𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌.\n"
-               f"👤 𝖴𝗌𝖾𝗋: {u_mention}\n"
-               f"🔢 𝖡𝖺𝗅𝖺𝗇𝖼𝖾: {new_balance}\n"
-               f"📢 𝖫ᴏɢ 𝗌𝖾𝗇𝗍 & {user_notified}"
+            p_msg2 = await message.reply(
+               f"✅ 𝖠𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌.\n👤 𝖴𝗌𝖾𝗋: {u_mention}\n🔢 𝖡𝖺𝗅𝖺𝗇𝼇𝖾: {new_balance}"
             )
+            if AUTO_DELETE: asyncio.create_task(auto_delete_message(p_msg2, 60))
+            try:
+                await client.send_message(chat_id=user_id, text=f"🎉 𝖠𝖽𝗆𝗂𝗇 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌 𝗍ᴏ 𝗒ᴏᴜ𝗋 𝗐𝖺𝗅𝗅𝖾ᴛ. 💰")
+            except: pass
 
     except Exception as e:
         await message.reply(f"Error: {e}")
@@ -336,12 +358,11 @@ async def remove_points_admin(client, message):
     try:
         parts = message.text.split()
         if len(parts) != 3: return await message.reply("Usage: `/remove_point user_id amount`")
-        
         user_id = int(parts[1])
         amount = int(parts[2])
-        
         new_balance = await db.change_points(user_id, -amount)
-        await message.reply(f"✅ Removed {amount} points.\nUser: `{user_id}`\nBalance: {new_balance}")
+        rem_msg = await message.reply(f"✅ Removed {amount} points.\nUser: `{user_id}`\nBalance: {new_balance}")
+        if AUTO_DELETE: asyncio.create_task(auto_delete_message(rem_msg, 60))
     except Exception as e:
         await message.reply(f"Error: {e}")
 
@@ -353,71 +374,58 @@ async def about(client, message):
        InlineKeyboardButton('• ᴄʟᴏsᴇ •', callback_data='close_data')
     ]]
     reply_markup = InlineKeyboardMarkup(buttons)
-    await message.reply_text(
+    about_m = await message.reply_text(
         text=script.ABOUT_TXT.format(temp.B_NAME, temp.B_NAME, get_readable_time(time.time() - StartTime), __version__),
         disable_web_page_preview=True, 
         reply_markup=reply_markup
     )
+    if AUTO_DELETE: asyncio.create_task(auto_delete_message(about_m, AUTO_DELETE_TIME))
 
- 
 @Client.on_message(filters.command("help"))
 async def help(client, message):
-    btn = [[
-       InlineKeyboardButton('• ᴄʟᴏsᴇ •', callback_data='close_data')
-    ]]
+    btn = [[InlineKeyboardButton('• ᴄʟᴏsᴇ •', callback_data='close_data')]]
     reply_markup = InlineKeyboardMarkup(btn)
-    await message.reply_text(
+    help_m = await message.reply_text(
         text=script.HELP2_TXT,
         disable_web_page_preview=True, 
         reply_markup=reply_markup
     )
+    if AUTO_DELETE: asyncio.create_task(auto_delete_message(help_m, AUTO_DELETE_TIME))
 
 @Client.on_message(filters.private & filters.command("files"))
 async def list_user_files(client, message: Message):
     user_id = message.from_user.id
     files = await db.files.find({"user_id": user_id}).to_list(length=100)
     if not files:
-        return await message.reply_text("❌ Yᴏᴜ ʜᴀᴠᴇɴ'ᴛ ᴜᴘʟᴏᴀᴅᴇᴅ ᴀɴʏ ғɪʟᴇꜱ.")
-    page = 1
-    per_page = 7
-    start = (page - 1) * per_page
-    end = start + per_page
+        no_f = await message.reply_text("❌ Yᴏᴜ ʜᴀᴠᴇɴ'ᴛ ᴜᴘʟᴏᴀᴅᴇᴅ ᴀɴʏ ғɪʟᴇꜱ.")
+        if AUTO_DELETE: asyncio.create_task(auto_delete_message(no_f, 30))
+        return
+    page, per_page = 1, 7
     total_pages = (len(files) + per_page - 1) // per_page
     btns = []
-    for f in files[start:end]:
-        name = f["file_name"][:40]
-        btns.append([InlineKeyboardButton(name, callback_data=f"sendfile_{f['file_id']}")])
-    nav_btns = []
-    if page < total_pages:
-        nav_btns.append(InlineKeyboardButton("➡️ Nᴇxᴛ", callback_data=f"filespage_{page + 1}"))
-    nav_btns.append(InlineKeyboardButton("❌ ᴄʟᴏsᴇ ❌", callback_data="close_data"))
-    btns.append(nav_btns)
-    await message.reply_photo(photo=FILE_PIC,
-        caption=f"📁 Tᴏᴛᴀʟ ғɪʟᴇꜱ: {len(files)} | Pᴀɢᴇ {page}/{total_pages}",
-        reply_markup=InlineKeyboardMarkup(btns)
-    )
+    for f in files[:per_page]:
+        btns.append([InlineKeyboardButton(f["file_name"][:40], callback_data=f"sendfile_{f['file_id']}")])
+    nav = [InlineKeyboardButton("❌ ᴄʟᴏsᴇ ❌", callback_data="close_data")]
+    if page < total_pages: nav.insert(0, InlineKeyboardButton("➡️ Nᴇxᴛ", callback_data=f"filespage_{page + 1}"))
+    btns.append(nav)
+    f_list = await message.reply_photo(photo=FILE_PIC, caption=f"📁 Tᴏᴛᴀʟ ғɪʟᴇꜱ: {len(files)} | Pᴀɢᴇ {page}/{total_pages}", reply_markup=InlineKeyboardMarkup(btns))
+    if AUTO_DELETE: asyncio.create_task(auto_delete_message(f_list, AUTO_DELETE_TIME))
 
 @Client.on_message(filters.private & filters.command("del_files"))
 async def delete_files_list(client, message):
     user_id = message.from_user.id
     files = await db.files.find({"user_id": user_id}).to_list(length=100)
     if not files:
-        return await message.reply_text("❌ Yᴏᴜ ʜᴀᴠᴇɴ'ᴛ ᴜᴘʟᴏᴀᴅᴇᴅ ᴀɴʏ ғɪʟᴇꜱ.")
-    page = 1
-    per_page = 7
-    start = (page - 1) * per_page
-    end = start + per_page
+        no_d = await message.reply_text("❌ Yᴏᴜ ʜᴀᴠᴇɴ'ᴛ ᴜᴘʟᴏᴀᴅᴇᴅ ᴀɴʏ ғɪʟᴇꜱ.")
+        if AUTO_DELETE: asyncio.create_task(auto_delete_message(no_d, 30))
+        return
+    page, per_page = 1, 7
     total_pages = (len(files) + per_page - 1) // per_page
     btns = []
-    for f in files[start:end]:
-        name = f["file_name"][:40]
-        btns.append([InlineKeyboardButton(name, callback_data=f"deletefile_{f['file_id']}")])
-    nav_btns = []
-    if page < total_pages:
-        nav_btns.append(InlineKeyboardButton("➡️ Nᴇxᴛ", callback_data=f"delfilespage_{page + 1}"))
-    nav_btns.append(InlineKeyboardButton("❌ ᴄʟᴏsᴇ ❌", callback_data="close_data"))
-    btns.append(nav_btns)
-    await message.reply_photo(photo=FILE_PIC,
-        caption=f"📁 Tᴏᴛᴀʟ ғɪʟᴇꜱ: {len(files)} | Pᴀɢᴇ {page}/{total_pages}",
-        reply_markup=InlineKeyboardMarkup(btns)
-   )
+    for f in files[:per_page]:
+        btns.append([InlineKeyboardButton(f["file_name"][:40], callback_data=f"deletefile_{f['file_id']}")])
+    nav = [InlineKeyboardButton("❌ ᴄʟᴏsᴇ ❌", callback_data="close_data")]
+    if page < total_pages: nav.insert(0, InlineKeyboardButton("➡️ Nᴇxᴛ", callback_data=f"delfilespage_{page + 1}"))
+    btns.append(nav)
+    d_list = await message.reply_photo(photo=FILE_PIC, caption=f"📁 Tᴏᴛᴀʟ ғɪʟᴇꜱ: {len(files)} | Pᴀɢᴇ {page}/{total_pages}", reply_markup=InlineKeyboardMarkup(btns))
+    if AUTO_DELETE: asyncio.create_task(auto_delete_message(d_list, AUTO_DELETE_TIME))

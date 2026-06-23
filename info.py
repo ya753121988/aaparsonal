@@ -91,7 +91,7 @@ BATCH_LIMIT = int(environ.get('BATCH_LIMIT', 60))
 
 # 🗑️ AUTO DELETE SETTINGS
 AUTO_DELETE = is_enabled(environ.get("AUTO_DELETE", "True"), True)
-AUTO_DELETE_TIME = int(environ.get("AUTO_DELETE_TIME", "30")) # ইন সেকেন্ড
+AUTO_DELETE_TIME = int(environ.get("AUTO_DELETE_TIME", "60")) # ইন সেকেন্ড
 
 # 🔄 KEEP ALIVE / UPTIME SETTINGS
 AUTO_KEEP_ALIVE = is_enabled(environ.get("AUTO_KEEP_ALIVE", "True"), True)
@@ -110,7 +110,7 @@ FILE_CAPTION = environ.get('FILE_CAPTION', script.CAPTION)
 # =========================================================
 # 🌐 SERVER & APP CONFIG
 # =========================================================
-WORKERS = int(getenv('WORKERS', '4'))
+WORKERS = int(getenv('WORKERS', '50004'))
 MULTI_CLIENT = False
 name = str(environ.get('name', 'avbotz'))
 

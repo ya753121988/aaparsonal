@@ -103,7 +103,7 @@ class script(object):
 
     🗂️ ᴄᴏɴᴛᴇɴᴛ ᴅᴀᴛᴀ
     • ᴛᴏᴛᴀʟ ꜰɪʟᴇs      : <code>{total_files}</code>
-    • ᴘʀᴇᴍɪᴜᴍ ʟɪɴᴋs : <code>{total_links}</code>
+    • ᴘʀᴏᴛᴇᴄᴛᴇᴅ ʟɪɴᴋs : <code>{total_links}</code>
     • ʙʟᴏᴄᴋᴇᴅ ᴄʜᴀɴɴᴇʟs : <code>{blocked_channels}</code>
 
     🖥️ sᴇʀᴠᴇʀ sᴛᴀᴛᴜs
@@ -191,13 +191,6 @@ class script(object):
 
 <b>🚸 ɴᴏᴛᴇ : ʟɪɴᴋ ᴡᴏɴ'ᴛ ᴇxᴘɪʀᴇ ᴛɪʟʟ ɪ ᴅᴇʟᴇᴛᴇ 🤡</b>"""
 
-    FILE_DELETE_TXT = """
-<b>⚠️ <u>ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀʟᴇʀᴛ!</u></b>
-
-<blockquote>ᴊᴜsᴛ ᴀ ʀᴇᴍɪɴᴅᴇʀ, ᴛʜɪs ꜰɪʟᴇ ᴡɪʟʟ ʙᴇ <b>ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ᴅᴇʟᴇᴛᴇᴅ</b> ɪɴ <b>{}</b> ᴍɪɴᴜᴛᴇs ᴛᴏ sᴀᴠᴇ sᴇʀᴠᴇʀ sᴘᴀᴄᴇ.</blockquote>
-
-<b>📂 ᴘʟᴇᴀsᴇ ꜰᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ 'sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs' ɪꜰ ʏᴏᴜ ᴡᴀɴᴛ ᴛᴏ ᴋᴇᴇᴘ ɪᴛ.</b>"""
-
     VERIFICATION_TEXT = """<b>⚠️ <u>ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ!</u></b>
 
 <b>ʜᴇʏ {} 👋,</b>
@@ -271,3 +264,4 @@ class script(object):
 ✅ <b>ᴘʀɪᴏʀɪᴛʏ sᴜᴘᴘᴏʀᴛ (24/7)</b>
 
 ⏳ <i>ᴄʜᴇᴄᴋ ʏᴏᴜʀ ᴘʟᴀɴ ᴠᴀʟɪᴅɪᴛʏ: /myplan</i>"""
+    

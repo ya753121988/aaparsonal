@@ -13,7 +13,8 @@ from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
 from info import (
     LOG_CHANNEL, PREMIUM_LOGS, ADMINS, FSUB, BIN_CHANNEL, 
-    SUPPORT, CHANNEL, PICS, FILE_PIC, FILE_CAPTION
+    SUPPORT, CHANNEL, PICS, FILE_PIC, FILE_CAPTION,
+    AUTO_DELETE, AUTO_DELETE_TIME
 )
 from plugins.utils import is_user_joined
 from plugins.batch import decode
@@ -133,13 +134,13 @@ async def start(client, message):
             await client.send_message(PREMIUM_LOGS, script.PREMIUM_REFERRAL_LOG.format(inviter=inviter.mention, inviter_id=inviter_id, user=mention, user_id=user_id))
             await client.send_message(
                 chat_id=inviter_id,
-                text=f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂𝗈𝗇𝗌 {inviter.mention}!\n\n𝖸𝗈𝗎 𝖼𝗈𝗅𝗅𝖾𝖼𝗍𝖾𝖽 100 𝖯𝗈𝗂𝗇𝗍𝗌 𝖺𝗇𝖽 𝗐𝗈𝗇 1 𝖬𝗈𝗇𝗍𝗁 𝖯𝗋𝖾𝗆𝗂𝗎𝗆 𝖲𝗎𝖻𝗌𝖼𝗋𝗂𝗉𝗍𝗂𝗈𝗇!"
+                text=f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂𝗈𝗇𝗌 {inviter.mention}!\n\n𝖸𝗈𝗎 𝖼𝗈𝗅𝗅𝖾𝖼𝗍𝖾𝖽 100 𝖯𝗈𝗂𝗇𝗍𝗌 𝖺𝗇𝖽 𝗐𝗈𝗇 1 𝖬𝗈𝗇𝗍𝗁 𝖯𝗋𝖾𝗆𝗂𝗎𝗆 𝖲𝗎𝖻𝗌𝖼𝗋𝗂𝗉𝗍𝗂ᴏ𝗇!"
             )
         else:
             await db.add_refer_points(inviter_id, new_total)
             await client.send_message(
                 chat_id=inviter_id,
-                text=f"✈️ 𝖭𝖾𝗐 𝖱𝖾𝖿𝖾𝗋𝗋𝖺𝗅!\n\n{mention} 𝗃𝗈𝗂𝗇𝖾𝖽 𝗏𝗂𝖺 𝗒𝗈𝗎𝗋 𝗅𝗂𝗇𝗄.\n➕ +10 𝖯𝗈𝗂𝗇𝗍𝗌\n💰 𝖳𝗈𝗍𝖺𝗅: {new_total}"
+                text=f"✈️ 𝖭𝖾𝗐 𝖱𝖾𝖿𝖾𝗋𝗋𝖺𝗅!\n\n{mention} 𝗃𝗈𝗂𝗇𝖾𝖽 𝗏𝗂𝖺 𝗒ᴏ𝗎𝗋 𝗅𝗂𝗇𝗄.\n➕ +10 𝖯𝗈𝗂𝗇𝗍𝗌\n💰 𝖳𝗈𝗍𝖺𝗅: {new_total}"
             )
         return
 
@@ -192,7 +193,8 @@ async def start(client, message):
                             caption=caption,
                             reply_markup=file_btn
                         )
-                        asyncio.create_task(auto_delete_message(sent_msg, 600)) 
+                        if AUTO_DELETE:
+                            asyncio.create_task(auto_delete_message(sent_msg, AUTO_DELETE_TIME)) 
                         await asyncio.sleep(1.5)
 
                     except FloodWait as e:
@@ -201,12 +203,16 @@ async def start(client, message):
                     except Exception:
                         pass
                 await status_msg.delete()
+                
+                # টাইম ক্যালকুলেশন (সেকেন্ড থেকে মিনিট)
+                del_time_display = AUTO_DELETE_TIME // 60
                 warn_msg = await message.reply_text(
                     f"✅ 𝖠𝗅𝗅 𝖥𝗂𝗅𝖾𝗌 𝖢𝗈𝗆𝗉𝗅𝖾𝗍𝖾 😁!\n\n"
-                    f"⚠️ 𝖨𝖬𝖯𝖮𝖱𝖳𝖠𝖭𝖳: 𝖥𝗂𝗅𝖾𝗌 𝗐𝗂𝗅𝗅 𝖻𝖾 𝖣𝖤𝖫𝖤𝖳𝖤𝖣 𝗂𝗇 10 𝖬𝗂𝗇𝗎𝗍𝖾𝗌.\n"
+                    f"⚠️ 𝖨𝖬𝖯𝖮𝖱𝖳𝖠𝖭𝖳: 𝖥𝗂𝗅𝖾𝗌 𝗐𝗂𝗅𝗅 𝖻𝖾 𝖣𝖤𝖫𝖤𝖳𝖤𝖣 𝗂𝗇 {del_time_display} 𝖬𝗂𝗇𝗎𝗍𝖾𝗌.\n"
                     f"📥 𝖥𝗈𝗋𝗐𝖺𝗋𝖽 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝗌𝖺𝗀𝖾𝗌 𝖭𝖮𝖶!"
                 )
-                asyncio.create_task(auto_delete_message(warn_msg, 600))
+                if AUTO_DELETE:
+                    asyncio.create_task(auto_delete_message(warn_msg, AUTO_DELETE_TIME))
                 return
             except Exception as e:
                 await message.reply_text(f"❌ Error: {e}")
@@ -243,13 +249,16 @@ async def start(client, message):
                 caption=caption,
                 reply_markup=btn_markup
             )
+            
+            del_time_display = AUTO_DELETE_TIME // 60
             warn_msg = await message.reply_text(
-            f"⚠️ 𝖨𝖬𝖯𝖮𝖱𝖳𝖠𝖭𝖳: 𝖥𝗂𝗅𝖾 𝗐𝗂𝗅𝗅 𝖻𝖾 𝖣𝖤𝖫𝖤𝖳𝖤𝖣 𝗂𝗇 10 𝖬𝗂𝗇𝗎𝗍𝖾𝗌.\n"
-            f"📥 𝖥𝗈𝗋𝖺𝗋𝖽 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝗌𝖺𝗀𝖾𝗌!",
+            f"⚠️ 𝖨𝖬𝖯𝖮𝖱𝖳𝖠𝖭𝖳: 𝖥𝗂𝗅𝖾 𝗐𝗂𝗅𝗅 𝖻𝖾 𝖣𝖤𝖫𝖤𝖳𝖤𝖣 𝗂𝗇 {del_time_display} 𝖬𝗂𝗇𝗎𝗍𝖾𝗌.\n"
+            f"📥 𝖥𝗈𝗋ᴡᴀʀ𝖽 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝗌𝖺𝗀𝖾𝗌!",
             quote=True
             )
-            asyncio.create_task(auto_delete_message(sent_msg, 600)) 
-            asyncio.create_task(auto_delete_message(warn_msg, 600))
+            if AUTO_DELETE:
+                asyncio.create_task(auto_delete_message(sent_msg, AUTO_DELETE_TIME)) 
+                asyncio.create_task(auto_delete_message(warn_msg, AUTO_DELETE_TIME))
             return
 
 @Client.on_message(filters.command("add_point") & filters.user(ADMINS))
@@ -277,20 +286,20 @@ async def add_points_admin(client, message):
             await db.update_user({"id": user_id, "expiry_time": expiry_time})
             await client.send_message(PREMIUM_LOGS, script.PREMIUM_POINTS_LOG.format(user=u_mention, name=u_name, uid=user_id, username=u_username, added_by=message.from_user.mention, points=amount))
             await message.reply(
-                f"✅ 𝖯𝗈𝗂𝗇𝗍𝗌 𝖠𝖽𝖽𝖾𝖽 & 𝖯𝗋𝖾𝗆𝗂𝗎𝗆 𝖠𝖼𝗍𝗂𝗏𝖺𝗍𝖾𝖽!\n\n"
+                f"✅ 𝖯𝗈𝗂𝗇𝗍𝗌 𝖠𝖽𝖽𝖾𝖽 & 𝖯𝗋𝖾ᴍɪᴜᴍ 𝖠𝖼𝗍ɪ𝗏𝖺𝗍𝖾𝖽!\n\n"
                 f"👤 𝖴𝗌𝖾𝗋: {u_mention}\n"
                 f"💰 𝖠𝖽𝖽𝖾𝖽: {amount}\n"
-                f"🎉 𝖴𝗌𝖾𝗋 𝗎𝗉𝗀𝗋𝖺𝖽𝖾𝖽 𝗍𝗈 𝖯𝗋𝖾𝗆𝗂𝗎𝗆 𝖿𝗈𝗋 1 𝖬𝗈𝗇𝗍𝗁!\n"
-                f"📢 𝖫𝗈𝗀 𝗌𝖾𝗇𝗍 𝗍𝗈 𝖢𝗁𝖺𝗇𝗇𝖾𝗅."
+                f"🎉 𝖴𝗌𝖾𝗋 𝗎𝗉𝗀𝗋𝖺𝖽𝖾𝖽 𝗍𝗈 𝖯𝗋𝖾𝗆𝗂𝗎ᴍ 𝖿ᴏ𝗋 1 𝖬ᴏ𝗇𝗍𝗁!\n"
+                f"📢 𝖫ᴏɢ 𝗌𝖾𝗇𝗍 𝗍𝗈 𝖢𝗁𝖺𝗇𝗇𝖾𝗅."
             )
             try:
                 await client.send_message(
                     chat_id=user_id,
                     text=(
-                        f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂𝗈𝗇𝗌!\n\n"
-                        f"𝖠𝖽𝗆𝗂𝗇 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉𝗈𝗂𝗇𝗍𝗌 𝗍𝗈 𝗒𝗈𝗎𝗋 𝗐𝖺𝗅𝗅𝖾𝗍.\n"
-                        f"𝖸𝗈𝗎 𝗋𝖾𝖺𝖼𝗁𝖾𝖽 100 𝖯𝗈𝗂𝗇𝗍𝗌 𝗍𝖺𝗋𝗀𝖾𝗍!\n\n"
-                        f"💎 1 𝖬𝗈𝗇𝗍𝗁 𝖯𝗋𝖾𝗆𝗂𝗎𝗆 𝖲𝗎𝖻𝗌𝖼𝗋𝗂𝗉𝗍𝗂𝗈𝗇 𝖠𝖼𝗍𝗂𝗏𝖺𝗍𝖾𝖽!"
+                        f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂ᴏ𝗇𝗌!\n\n"
+                        f"𝖠𝖽ᴍɪɴ 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌 𝗍ᴏ 𝗒ᴏᴜ𝗋 𝗐𝖺𝗅𝗅𝖾𝗍.\n"
+                        f"𝖸ᴏ𝗎 𝗋𝖾𝖺𝖼𝗁𝖾𝖽 100 𝖯ᴏɪ𝗇ᴛ𝗌 𝗍𝖺𝗋𝗀𝖾𝗍!\n\n"
+                        f"💎 1 𝖬ᴏ𝗇ᴛ𝗁 𝖯𝗋𝖾ᴍɪᴜᴍ 𝖲ᴜ𝖻𝗌𝖼𝗋𝗂𝗉ᴛ𝗂ᴏ𝗇 𝖠𝖼ᴛ𝗂𝗏𝖺ᴛ𝖾𝖽!"
                     )
                 )
             except Exception:
@@ -302,20 +311,20 @@ async def add_points_admin(client, message):
                 await client.send_message(
                     chat_id=user_id,
                     text=(
-                        f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂𝗈𝗇𝗌!\n\n"
-                        f"𝖠𝖽𝗆𝗂𝗇 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉𝗈𝗂𝗇𝗍𝗌 𝗍𝗈 𝗒𝗈𝗎𝗋 𝗐𝖺𝗅𝗅𝖾𝗍. 💰\n"
-                        f"🔢 𝖢𝗎𝗋𝗋𝖾𝗇𝗍 𝖡𝖺𝗅𝖺𝗇𝖼𝖾: {new_balance}\n"
-                        f"🎯 𝖦𝗈𝖺𝗅: 𝖱𝖾𝖺𝖼𝗁 100 𝖯𝗈𝗂𝗇𝗍𝗌 𝖿𝗈𝗋 𝖥𝗋𝖾𝖾 𝖯𝗋𝖾𝗆𝗂𝗎𝗆!"
+                        f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂ᴏ𝗇𝗌!\n\n"
+                        f"𝖠𝖽ᴍɪɴ 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌 𝗍ᴏ 𝗒ᴏᴜ𝗋 𝗐𝖺𝗅𝗅𝖾𝗍. 💰\n"
+                        f"🔢 𝖢ᴜ𝗋𝗋𝖾𝗇ᴛ 𝖡𝖺𝗅𝖺𝗇𝖼𝖾: {new_balance}\n"
+                        f"🎯 𝖦ᴏ𝖺𝗅: 𝖱𝖾𝖺𝖼𝗁 100 𝖯ᴏɪ𝗇ᴛ𝗌 𝖿ᴏ𝗋 𝖥𝗋𝖾𝖾 𝖯𝗋𝖾ᴍɪᴜᴍ!"
                     )
                 )
                 user_notified = "User Notified ✅"
             except:
                 user_notified = "Failed to DM User ❌"
             await message.reply(
-               f"✅ 𝖠𝖽𝖽𝖾𝖽 {amount} 𝗉𝗈𝗂𝗇𝗍𝗌.\n"
+               f"✅ 𝖠𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌.\n"
                f"👤 𝖴𝗌𝖾𝗋: {u_mention}\n"
                f"🔢 𝖡𝖺𝗅𝖺𝗇𝖼𝖾: {new_balance}\n"
-               f"📢 𝖫𝗈𝗀 𝗌𝖾𝗇𝗍 & {user_notified}"
+               f"📢 𝖫ᴏɢ 𝗌𝖾𝗇𝗍 & {user_notified}"
             )
 
     except Exception as e:
@@ -412,4 +421,3 @@ async def delete_files_list(client, message):
         caption=f"📁 Tᴏᴛᴀʟ ғɪʟᴇꜱ: {len(files)} | Pᴀɢᴇ {page}/{total_pages}",
         reply_markup=InlineKeyboardMarkup(btns)
    )
-    

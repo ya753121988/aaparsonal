@@ -140,6 +140,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif query.data == "reffff":
         user_id = query.from_user.id
         points = await db.get_refer_points(user_id)
+        # FIXED: Added quotes and f-string formatting
         ref_link = f"https://t.me/{temp.U_NAME}?start=reff_{user_id}"
         share_link = f"https://telegram.me/share/url?url={ref_link}&text=Join%20Now%20For%20Movies!"
         buttons = [[
@@ -244,6 +245,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             media = original_message.document or original_message.video or original_message.audio
             caption = None
             if media:
+                # getattr is safer here as Video objects sometimes don't have file_name attribute directly in some pyrogram versions
                 file_name = getattr(media, "file_name", "Unnamed") 
                 file_size = get_size(media.file_size)
                 caption = FILE_CAPTION.format(CHANNEL, file_name)
@@ -272,3 +274,4 @@ async def cb_handler(client: Client, query: CallbackQuery):
             pass
         await query.answer("✅ Fɪʟᴇ ᴅᴇʟᴇᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱғᴜʟʟʏ!", show_alert=True)
         await query.message.edit_text("🗑️ Fɪʟᴇ ʜᴀꜱ ʙᴇᴇɴ ᴅᴇʟᴇᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱғᴜʟʟʏ.")
+		

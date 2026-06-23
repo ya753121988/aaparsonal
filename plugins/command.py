@@ -11,7 +11,6 @@ from database.users_db import db
 from pyrogram import Client, filters, enums
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
-# info থেকে AUTO_DELETE এবং AUTO_DELETE_TIME যুক্ত করা হয়েছে
 from info import (
     LOG_CHANNEL, PREMIUM_LOGS, ADMINS, FSUB, BIN_CHANNEL, 
     SUPPORT, CHANNEL, PICS, FILE_PIC, FILE_CAPTION,
@@ -67,7 +66,7 @@ async def start(client, message):
         )
         return
 
-    # 6. Default Welcome Message
+    # 6. Default Welcome Message (Only sends if NO argument is passed)
     if not argument or argument == "start":
         buttons = [
             [
@@ -167,7 +166,7 @@ async def start(client, message):
                 end_id = int(end_id)
                 status_msg = await message.reply_text(
                     "🔄 **𝘗𝘳𝘰𝘤𝘦𝘴𝘴𝘪𝘯𝘨 𝘉𝘢𝘵𝘤𝘩 𝘙𝘦𝘲𝘶𝘦𝘴𝘵...**\n"
-                    "<i>𝘚𝘦𝘯𝘥𝘪𝘯𝘨 𝘺𝘰𝘶𝘳 𝘧𝘪𝘭𝘦𝘴 </i>"
+                    "<i>𝘚𝘦𝘯𝘥𝘪𝘯𝘨 𝘺𝘰𝘶𝘳 𝘩𝘦𝘭𝘱𝘦𝘴 </i>"
                 )
                 for i in range(start_id, end_id + 1):
                     try:
@@ -178,7 +177,7 @@ async def start(client, message):
                         if msg_obj.video: file_name = msg_obj.video.file_name
                         elif msg_obj.document: file_name = msg_obj.document.file_name
                         elif msg_obj.audio: file_name = msg_obj.audio.file_name
-                        
+                        if not file_name: file_name = "File"
                         caption = FILE_CAPTION.format(CHANNEL, file_name)
                         file_btn = InlineKeyboardMarkup(
                             [[InlineKeyboardButton("🔴 ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ & ғᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ 🔴", callback_data=f'stream#{i}')]]
@@ -201,12 +200,10 @@ async def start(client, message):
                     except Exception:
                         pass
                 await status_msg.delete()
-                
-                # ব্যাচ শেষ হওয়ার মেসেজ এবং এটিও অটো ডিলিট হবে
                 warn_msg = await message.reply_text(
                     f"✅ 𝖠𝗅𝗅 𝖥𝗂𝗅𝖾𝗌 𝖢𝗈𝗆𝗉𝗅𝖾𝗍𝖾 😁!\n\n"
                     f"⚠️ 𝖨𝖬𝖯𝖮𝖱𝖳𝖠𝖭𝖳: 𝖥𝗂𝗅𝖾𝗌 𝗐𝗂𝗅𝗅 𝖻𝖾 𝖣𝖤𝖫𝖤𝖳𝖤𝖣 𝗂𝗇 {AUTO_DELETE_TIME//60} 𝖬𝗂𝗇𝗎𝗍𝖾𝗌.\n"
-                    f"📥 𝖥𝗈𝗋𝗐𝖺𝗋𝖽 𝗍𝗈 𝖲𝖺𝗏𝖾ᴅ 𝖬𝖾𝗌𝗌𝖺𝗀𝖾𝗌 𝖭𝖮𝖶!"
+                    f"📥 𝖥𝗈𝗋𝗐𝖺𝗋𝖽 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝗌𝖺𝗀𝖾𝗌 𝖭𝖮𝖶!"
                 )
                 if AUTO_DELETE:
                     asyncio.create_task(auto_delete_message(warn_msg, AUTO_DELETE_TIME))
@@ -229,7 +226,6 @@ async def start(client, message):
                 _, file_id = argument.split("_", 1)
             except ValueError:
                 return await message.reply("<b>⚠️ 𝘐𝘯𝘷𝘢𝘭𝘪𝘥 𝘍𝘪𝘭𝘦 𝘓𝘪𝘯𝘬!</b>")
-            
             original_message = await client.get_messages(int(BIN_CHANNEL), int(file_id))
             media = original_message.document or original_message.video or original_message.audio
             caption = None
@@ -237,11 +233,9 @@ async def start(client, message):
                 file_name = getattr(media, "file_name", "Unnamed File") or "Unnamed File"
                 try: caption = FILE_CAPTION.format(channel=CHANNEL, file_name=file_name)
                 except: caption = FILE_CAPTION.format(CHANNEL, file_name)
-            
             btn_markup = InlineKeyboardMarkup(
                 [[InlineKeyboardButton("🔴 ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ & ғᴀsᴛ ᴅᴏᴡɴʟᴏᴀᴅ 🔴", callback_data=f'stream#{file_id}')]]
             )
-            
             sent_msg = await client.copy_message(
                 chat_id=user_id,
                 from_chat_id=int(BIN_CHANNEL),
@@ -249,20 +243,17 @@ async def start(client, message):
                 caption=caption,
                 reply_markup=btn_markup
             )
-            
             warn_msg = await message.reply_text(
                 f"⚠️ 𝖨𝖬𝖯𝖮𝖱𝖳𝖠𝖭𝖳: 𝖥𝗂𝗅𝖾 𝗐𝗂𝗅𝗅 𝖻𝖾 𝖣𝖤𝖫𝖤𝖳𝖤𝖣 𝗂𝗇 {AUTO_DELETE_TIME//60} 𝖬𝗂𝗇𝗎𝗍𝖾𝗌.\n"
-                f"📥 𝖥𝗈𝗋𝗐𝖺𝗋𝖽 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝗌𝖺𝗀𝖾𝗌!",
+                f"📥 𝖥𝗈𝗋ᴡᴀʀᴅ 𝗍𝗈 𝖲𝖺𝗏𝖾𝖽 𝖬𝖾𝗌𝗌𝖺𝗀𝖾𝗌!",
                 quote=True
             )
-            
-            # সিঙ্গেল ফাইলে অটো ডিলিট
+            # অটো ডিলিট লজিক কল করা হয়েছে
             if AUTO_DELETE:
                 asyncio.create_task(auto_delete_message(sent_msg, AUTO_DELETE_TIME)) 
                 asyncio.create_task(auto_delete_message(warn_msg, AUTO_DELETE_TIME))
             return
 
-# [বাকি এডমিন কমান্ড এবং অন্যান্য ফাংশনগুলো আপনার কোড অনুযায়ী নিচে থাকবে...]
 @Client.on_message(filters.command("add_point") & filters.user(ADMINS))
 async def add_points_admin(client, message):
     try:
@@ -283,7 +274,7 @@ async def add_points_admin(client, message):
         new_balance = await db.change_points(user_id, amount)
         if new_balance >= 100:
             await db.add_refer_points(user_id, 0)
-            seconds = 2592000 
+            seconds = 2592000
             expiry_time = datetime.datetime.now() + datetime.timedelta(seconds=seconds)
             await db.update_user({"id": user_id, "expiry_time": expiry_time})
             await client.send_message(PREMIUM_LOGS, script.PREMIUM_POINTS_LOG.format(user=u_mention, name=u_name, uid=user_id, username=u_username, added_by=message.from_user.mention, points=amount))
@@ -299,9 +290,9 @@ async def add_points_admin(client, message):
                     chat_id=user_id,
                     text=(
                         f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂𝗈𝗇𝗌!\n\n"
-                        f"𝖠𝖽𝗆𝗂𝗇 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉𝗈𝗂𝗇𝗍𝗌 𝗍𝗈 𝗒𝗈𝗎𝗋 𝗐𝖺𝗅ʟ𝖾𝗍.\n"
+                        f"𝖠𝖽𝗆𝗂𝗇 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉𝗈𝗂𝗇𝗍𝗌 𝗍𝗈 𝗒𝗈𝗎𝗋 𝗐𝖺𝗅𝗅𝖾𝗍.\n"
                         f"𝖸𝗈𝗎 𝗋𝖾𝖺𝖼𝗁𝖾𝖽 100 𝖯𝗈𝗂𝗇𝗍𝗌 𝗍𝖺𝗋𝗀𝖾𝗍!\n\n"
-                        f"💎 1 𝖬𝗈𝗇𝗍𝗁 𝖯𝗋𝖾𝗆𝗂𝗎𝗆 𝖲𝗎𝖻𝗌𝖼𝗋𝗂𝗉𝗍𝗂𝗈𝗇 𝖠𝖼𝗍𝗂𝗏𝖺𝗍𝖾𝖽!"
+                        f"💎 1 𝖬𝗈𝗇𝗍𝗁 𝖯𝗋𝖾𝗆𝗂𝗎𝗆 𝖲𝗎𝖻𝗌𝖼ริปชัน 𝖠𝖼𝗍𝗂𝗏𝖺𝗍𝖾𝖽!"
                     )
                 )
             except Exception:
@@ -331,14 +322,17 @@ async def add_points_admin(client, message):
 
     except Exception as e:
         await message.reply(f"Error: {e}")
+        
 
 @Client.on_message(filters.command("remove_point") & filters.user(ADMINS))
 async def remove_points_admin(client, message):
     try:
         parts = message.text.split()
         if len(parts) != 3: return await message.reply("Usage: `/remove_point user_id amount`")
+        
         user_id = int(parts[1])
         amount = int(parts[2])
+        
         new_balance = await db.change_points(user_id, -amount)
         await message.reply(f"✅ Removed {amount} points.\nUser: `{user_id}`\nBalance: {new_balance}")
     except Exception as e:
@@ -358,6 +352,7 @@ async def about(client, message):
         reply_markup=reply_markup
     )
 
+ 
 @Client.on_message(filters.command("help"))
 async def help(client, message):
     btn = [[
@@ -386,8 +381,9 @@ async def list_user_files(client, message: Message):
         name = f["file_name"][:40]
         btns.append([InlineKeyboardButton(name, callback_data=f"sendfile_{f['file_id']}")])
     nav_btns = []
-    if page < total_pages:
-        nav_btns.append(InlineKeyboardButton("➡️ Nᴇxᴛ", callback_data=f"filespage_{page + 1}"))
+    if total_pages > 1:
+        if page < total_pages:
+            nav_btns.append(InlineKeyboardButton("➡️ Nᴇxᴛ", callback_data=f"filespage_{page + 1}"))
     nav_btns.append(InlineKeyboardButton("❌ ᴄʟᴏsᴇ ❌", callback_data="close_data"))
     btns.append(nav_btns)
     await message.reply_photo(photo=FILE_PIC,
@@ -411,8 +407,9 @@ async def delete_files_list(client, message):
         name = f["file_name"][:40]
         btns.append([InlineKeyboardButton(name, callback_data=f"deletefile_{f['file_id']}")])
     nav_btns = []
-    if page < total_pages:
-        nav_btns.append(InlineKeyboardButton("➡️ Nᴇxᴛ", callback_data=f"delfilespage_{page + 1}"))
+    if total_pages > 1:
+        if page < total_pages:
+            nav_btns.append(InlineKeyboardButton("➡️ Nᴇxᴛ", callback_data=f"delfilespage_{page + 1}"))
     nav_btns.append(InlineKeyboardButton("❌ ᴄʟᴏsᴇ ❌", callback_data="close_data"))
     btns.append(nav_btns)
     await message.reply_photo(photo=FILE_PIC,

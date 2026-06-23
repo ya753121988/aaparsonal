@@ -1,151 +1,70 @@
 import asyncio
-import logging
-import aiohttp
-import traceback
-import random
-import string
-from datetime import datetime, timedelta, date, time
-import pytz
-from database.users_db import db
+import time
+from pyrogram.errors import UserNotParticipant, ChatAdminRequired
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram.enums import ParseMode
 from Script import script
-from info import PING_INTERVAL, SHORTLINK_API, SHORTLINK_URL, SHORTLINK_API2, SHORTLINK_WEBSITE2, URL 
-from shortzy import Shortzy
+from info import AUTH_PICS, AUTH_CHANNEL, ENABLE_LIMIT, RATE_LIMIT_TIMEOUT, MAX_FILES, AUTO_DELETE, AUTO_DELETE_TIME
 
-# -------------------------- LOGGER INITIALIZATION -------------------------- #
-logger = logging.getLogger(__name__)
-
-# -------------------------- TEMPORARY DATA STORAGE -------------------------- #
-class temp:
-    ME = None
-    BOT = None
-    U_NAME = None
+# Global Temp class to store bot names
+class Temp:
     B_NAME = None
-    
-# -------------------------- PING SERVER -------------------------- #
-async def ping_server():
-    while True:
-        await asyncio.sleep(PING_INTERVAL)
+    U_NAME = None
+
+temp = Temp()
+rate_limit = {}
+
+async def is_user_joined(bot, message: Message) -> bool:
+    user_id = message.from_user.id
+    bot_user = await bot.get_me()    
+    not_joined_channels = []
+    for channel_id in AUTH_CHANNEL:
         try:
-            if not URL:
-                logger.warning("⚠️ URL not found in info.py for ping_server")
-                continue
-                
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-                async with session.get(URL) as resp:
-                    logging.info(f"✅ Pinged server: {resp.status}")
-        except asyncio.TimeoutError:
-            logger.warning("⚠️ Timeout: Could not ping server!")
-        except Exception as e:
-            logger.error(f"❌ Exception while pinging server: {e}")
-            traceback.print_exc()
+            await bot.get_chat_member(channel_id, user_id)
+        except UserNotParticipant:
+            try:
+                chat = await bot.get_chat(channel_id)
+                invite_link = await bot.export_chat_invite_link(channel_id)
+                not_joined_channels.append((chat.title, invite_link))
+            except ChatAdminRequired:
+                return False
+            except: continue
+        except: continue
 
-# -------------------------- FILE SIZE CONVERTER -------------------------- #
-def get_size(size: int) -> str:
-    """Bytes to readable format converter"""
-    units = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB"]
-    size = float(size)
-    i = 0
-    while size >= 1024.0 and i < len(units) - 1:
-        size /= 1024.0
-        i += 1
-    return f"{size:.2f} {units[i]}"
-
-def humanbytes(size: int) -> str:
-    """Alternative bytes converter"""
-    if size is None:
-        return "0 B"
-    power = 2 ** 10
-    n = 0
-    power_labels = {0: "B", 1: "KB", 2: "MB", 3: "GB", 4: "TB"}
-    while size >= power and n < 4:
-        size /= power
-        n += 1
-    return f"{size:.2f} {power_labels[n]}"
+    if not_joined_channels:
+        buttons = [[InlineKeyboardButton(f"Join {title}", url=link)] for title, link in not_joined_channels]
+        buttons.append([InlineKeyboardButton("🔄 Try Again", url=f"https://t.me/{bot_user.username}?start=start")])
+        await message.reply_photo(
+            photo=AUTH_PICS,
+            caption=script.AUTH_TXT.format(message.from_user.mention),
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
+        return False
+    return True
     
-# -------------------------- READABLE TIME FORMATTER -------------------------- #
-def get_readable_time(seconds: int) -> str:
-    """Seconds to readable time (e.g., 1h 30m 10s)"""
-    if not seconds:
-        return "0s"
-        
-    time_list = []
-    time_suffix = ["s", "m", "h", " days"]
-    count = 0
-    while count < 4:
-        count += 1
-        if count < 3:
-            seconds, result = divmod(seconds, 60)
-        elif count == 3:
-            seconds, result = divmod(seconds, 60)
-        else:
-            seconds, result = divmod(seconds, 24)
-        if seconds == 0 and result == 0:
-            break
-        time_list.append(f"{int(result)}{time_suffix[count - 1]}")
-    time_list.reverse()
-    return ": ".join(time_list)
-
-# -------------------------- SHORT LINK GENERATOR (Manual) -------------------------- #
-async def get_shortlink(link):
-    API = SHORTLINK_API
-    URL_DOMAIN = SHORTLINK_URL
-    
-    if not link.startswith("https"):
-        link = link.replace("http", "https", 1)
-
-    if URL_DOMAIN == "api.shareus.in":
-        req_url = f"https://{URL_DOMAIN}/shortLink"
-        params = {"token": API, "format": "json", "link": link}
+async def is_user_allowed(user_id):
+    if not ENABLE_LIMIT: return True, 0
+    current_time = time.time()
+    if user_id in rate_limit:
+        file_count, last_time = rate_limit[user_id]
+        if file_count >= MAX_FILES and (current_time - last_time) < RATE_LIMIT_TIMEOUT:
+            return False, int(RATE_LIMIT_TIMEOUT - (current_time - last_time))
+        elif (current_time - last_time) >= RATE_LIMIT_TIMEOUT:
+            rate_limit[user_id] = [1, current_time]
+        else: rate_limit[user_id][0] += 1
     else:
-        req_url = f"https://{URL_DOMAIN}/api"
-        params = {"api": API, "url": link}
+        rate_limit[user_id] = [1, current_time]
+    return True, 0
 
+async def auto_delete_message(message: Message, delay: int = None):
+    """📌 এটি নির্দিষ্ট সময় পর মেসেজ ডিলিট করবে"""
+    if not AUTO_DELETE:
+        return
+    wait_time = delay if delay is not None else AUTO_DELETE_TIME
+    await asyncio.sleep(wait_time)
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(req_url, params=params, ssl=False) as response:
-                data = await response.json(content_type=None)
-                
-                if data.get("status") == "success" or data.get("shortenedUrl"):
-                    return data.get("shortlink") or data.get("shortenedUrl")
-                else:
-                    logger.error(f"Shorten Error: {data.get('message', 'Unknown Error')}")
-                    
-    except Exception as e:
-        logger.error(f"Shorten Exception: {e}")
-
-    return f"https://{URL_DOMAIN}/api?api={API}&url={link}"
-
-# -------------------------- SHORTENER HELPER (Shortzy Library) -------------------------- #
-async def get_shortlink_av(url, is_second_shortener=False):
-    """
-    Uses Shortzy library to generate links.
-    Handles switching between Primary and Secondary shorteners.
-    """
-    if is_second_shortener:
-        api = SHORTLINK_API2
-        site = SHORTLINK_WEBSITE2
-    else:
-        api = SHORTLINK_API
-        site = SHORTLINK_URL  # Fixed: Changed from SHORTLINK_WEBSITE to SHORTLINK_URL matches import
-
-    shortzy = Shortzy(api, site)
-    try:
-        url = await shortzy.convert(url)
-    except Exception as e:
-        logger.error(f"Shortener Error: {e}")
-        try:
-            url = await shortzy.get_quick_link(url)
-        except Exception:
-            logger.error("Failed to generate shortlink")
-    return url
-
-# --- BACKGROUND DELETE HELPER ---
-async def auto_delete_message(message, dlt_msg):
-    """Waits 600s then deletes the verify prompt to keep chat clean."""
-    await asyncio.sleep(600)
-    try:
-        await dlt_msg.delete()
         await message.delete()
-    except Exception:
+        if message.reply_to_message:
+            await message.reply_to_message.delete()
+    except:
         pass
-        

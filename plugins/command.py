@@ -16,11 +16,11 @@ from info import (
     SUPPORT, CHANNEL, PICS, FILE_PIC, FILE_CAPTION,
     AUTO_DELETE, AUTO_DELETE_TIME
 )
-from plugins.utils import is_user_joined
+from plugins.utils import is_user_joined, auto_delete_message # Fixed Import
 from plugins.batch import decode
 from web.utils import StartTime, __version__
 from plugins.check_verification import av_x_verification, verify_user_on_start
-from utils import temp, get_size, get_readable_time, auto_delete_message
+from utils import temp, get_size, get_readable_time
 
 logger = logging.getLogger(__name__)
 
@@ -149,13 +149,13 @@ async def start(client, message):
             await client.send_message(PREMIUM_LOGS, script.PREMIUM_REFERRAL_LOG.format(inviter=inviter.mention, inviter_id=inviter_id, user=mention, user_id=user_id))
             await client.send_message(
                 chat_id=inviter_id,
-                text=f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂𝗈𝗇𝗌 {inviter.mention}!\n\n𝖸𝗈𝗎 𝖼𝗈𝗅𝗅𝖾𝖼𝗍𝖾𝖽 100 𝖯𝗈𝗂𝗇𝗍𝗌 𝖺𝗇𝖽 𝗐𝗈𝗇 1 𝖬𝗈𝗇𝗍𝗁 𝖯𝗋𝖾ᴍ𝗂𝗎ᴍ 𝖲𝗎𝖻𝗌𝖼𝗋𝗂𝗉𝗍𝗂ᴏ𝗇!"
+                text=f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺𝗍𝗎𝗅𝖺𝗍𝗂𝗈𝗇𝗌 {inviter.mention}!\n\n𝖸𝗈𝗎 𝖼𝗈𝗅𝗅𝖾𝖼𝗍𝖾𝖽 100 𝖯𝗈𝗂𝗇ᴛ𝗌 𝖺𝗇𝖽 𝗐𝗈𝗇 1 𝖬𝗈𝗇𝗍𝗁 𝖯𝗋𝖾ᴍ𝗂𝗎ᴍ 𝖲𝗎𝖻𝗌𝖼𝗋𝗂𝗉ᴛ𝗂ᴏ𝗇!"
             )
         else:
             await db.add_refer_points(inviter_id, new_total)
             await client.send_message(
                 chat_id=inviter_id,
-                text=f"✈️ 𝖭𝖾𝗐 𝖱𝖾𝖿𝖾𝗋𝗋𝖺𝗅!\n\n{mention} 𝗃𝗈𝗂𝗇𝖾𝖽 𝗏𝗂𝖺 𝗒ᴏ𝗎𝗋 𝗅𝗂𝗇𝗄.\n➕ +10 𝖯𝗈𝗂𝗇𝗍𝗌\n💰 𝖳𝗈𝗍𝖺𝗅: {new_total}"
+                text=f"✈️ 𝖭𝖾𝗐 𝖱𝖾𝖿𝖾𝗋𝗋𝖺𝗅!\n\n{mention} 𝗃ᴏ𝗂𝗇𝖾𝖽 𝗏𝗂𝖺 𝗒ᴏ𝗎𝗋 𝗅𝗂𝗇𝗄.\n➕ +10 𝖯𝗈𝗂𝗇𝗍𝗌\n💰 𝖳𝗈𝗍𝖺𝗅: {new_total}"
             )
         return
 
@@ -331,9 +331,9 @@ async def add_points_admin(client, message):
                     chat_id=user_id,
                     text=(
                         f"🎉 𝖢𝗈𝗇𝗀𝗋𝖺ᴛ𝗎𝗅𝖺ᴛ𝗂ᴏɴ𝗌!\n\n"
-                        f"𝖠𝖽ᴍɪɴ 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌 𝗍ᴏ 𝗒ᴏᴜ𝗋 𝗐𝖺𝗅𝗅𝖾ᴛ.\n"
+                        f"𝖠𝖽ᴍɪɴ 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌 𝗍ᴏ 𝗒ᴏᴜ𝗋 𝗐𝖺𝗅ʟ𝖾ᴛ.\n"
                         f"𝖸ᴏ𝗎 𝗋𝖾𝖺𝼇𝗁𝖾𝖽 100 𝖯ᴏɪ𝗇ᴛ𝗌 𝗍𝖺𝗋ɢᴇᴛ!\n\n"
-                        f"💎 1 𝖬ᴏ𝗇ᴛ𝗁 𝖯𝗋𝖾ᴍ𝗂ᴜᴍ 𝖲ᴜ𝖻𝗌𝖼𝗋𝗂𝗉ᴛ𝗂ᴏ𝗇 𝖠𝼇ᴛ𝗂𝗏𝖺ᴛ𝖾𝖽!"
+                        f"💎 1 𝖬ᴏ𝗇ᴛʜ 𝖯𝗋𝖾ᴍ𝗂ᴜᴍ 𝖲ᴜ𝖻𝗌𝖼𝗋𝗂𝗉ᴛ𝗂ᴏɴ 𝖠ᴛ𝗂𝗏𝖺ᴛ𝖾𝖽!"
                     )
                 )
             except Exception:
@@ -346,7 +346,7 @@ async def add_points_admin(client, message):
             )
             if AUTO_DELETE: asyncio.create_task(auto_delete_message(p_msg2, 60))
             try:
-                await client.send_message(chat_id=user_id, text=f"🎉 𝖠𝖽𝗆𝗂𝗇 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌 𝗍ᴏ 𝗒ᴏᴜ𝗋 𝗐𝖺𝗅𝗅𝖾ᴛ. 💰")
+                await client.send_message(chat_id=user_id, text=f"🎉 𝖠𝖽𝗆𝗂𝗇 𝖺𝖽𝖽𝖾𝖽 {amount} 𝗉ᴏɪ𝗇ᴛ𝗌 𝗍ᴏ 𝗒ᴏᴜ𝗋 𝗐𝖺𝗅ʟ𝖾ᴛ. 💰")
             except: pass
 
     except Exception as e:

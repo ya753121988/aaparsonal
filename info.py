@@ -1,8 +1,10 @@
 import re
 import os
 import time
+import asyncio
 import threading
 import urllib.request
+from datetime import datetime
 from os import environ, getenv
 from Script import script
 
@@ -91,7 +93,7 @@ BATCH_LIMIT = int(environ.get('BATCH_LIMIT', 60))
 
 # 🗑️ AUTO DELETE SETTINGS
 AUTO_DELETE = is_enabled(environ.get("AUTO_DELETE", "True"), True)
-AUTO_DELETE_TIME = int(environ.get("AUTO_DELETE_TIME", "60")) # ইন সেকেন্ড
+AUTO_DELETE_TIME = int(environ.get("AUTO_DELETE_TIME", "600")) # ১০ মিনিটের জন্য ৬০০ সেকেন্ড দিন
 
 # 🔄 KEEP ALIVE / UPTIME SETTINGS
 AUTO_KEEP_ALIVE = is_enabled(environ.get("AUTO_KEEP_ALIVE", "True"), True)
@@ -147,15 +149,41 @@ if not URL or URL == "/" or URL.startswith("https://127.0.0.1"):
 def ping_server():
     while True:
         try:
-            # URL থেকে সেলফ কল করবে
             urllib.request.urlopen(URL)
             print(f"Ping successful to: {URL}")
         except Exception as e:
             print(f"Ping failed: {e}")
-        
-        # ২০ মিনিট পরপর পিং করবে (1200 সেকেন্ড)
         time.sleep(PING_INTERVAL)
 
 if AUTO_KEEP_ALIVE:
-    # ব্যাকগ্রাউন্ডে থ্রেড চালু করা হচ্ছে যাতে মেইন বোট স্লো না হয়
     threading.Thread(target=ping_server, daemon=True).start()
+
+# =========================================================
+# 🗑️ UNIVERSAL AUTO-DELETE ENGINE (FOR ALL MEDIA TYPES)
+# =========================================================
+async def auto_delete_message(message, delay=None):
+    """
+    এটি ভিডিও, অডিও, ফটো, এপিকে, টেক্সট বা লিঙ্ক—যেকোনো মেসেজ
+    নির্ধারিত সময় পর অটো ডিলিট করবে।
+    """
+    if not AUTO_DELETE:
+        return
+    
+    # সময় নির্ধারণ (যদি আলাদা সময় না থাকে তবে ডিফল্ট নেবে)
+    wait_time = delay if delay is not None else AUTO_DELETE_TIME
+    
+    await asyncio.sleep(wait_time)
+    
+    try:
+        # মেইন মেসেজ ডিলিট করবে
+        await message.delete()
+        
+        # যদি ওই মেসেজের সাথে কোনো ফাইল রিপ্লাই হিসেবে থাকে সেটিও ডিলিট করবে
+        if hasattr(message, 'reply_to_message') and message.reply_to_message:
+            try:
+                await message.reply_to_message.delete()
+            except:
+                pass
+    except Exception:
+        # মেসেজ ডিলিট করতে না পারলে (যদি অলরেডি ডিলিট থাকে) স্কিপ করবে
+        pass
